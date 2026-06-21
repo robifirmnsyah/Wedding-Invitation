@@ -55,7 +55,6 @@ export interface WeddingConfig {
   quote: Quote;
   loveStory: StoryMilestone[];
   event: {
-    akad: EventInfo;
     resepsi: EventInfo;
   };
   countdownTarget: string;

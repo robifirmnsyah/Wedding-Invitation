@@ -29,3 +29,6 @@ next-env.d.ts
 
 # guestbook runtime storage (auto-created)
 /data/wishes.json
+
+# raw full-res prewedding photos (optimized derivatives are committed instead)
+/public/assets/gallery/Prewedding-Photos/
