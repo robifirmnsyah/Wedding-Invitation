@@ -1,13 +1,13 @@
 "use client";
 
-import { GiOliveBranch } from "react-icons/gi";
+import { GiVineLeaf } from "react-icons/gi";
 
 /** Small olive-leaf divider used between sections. */
 export function LeafDivider({ className = "" }: { className?: string }) {
   return (
     <div className={`divider-leaf ${className}`}>
       <span className="h-px w-12 bg-olive/30" />
-      <GiOliveBranch className="text-xl" />
+      <GiVineLeaf className="text-xl" />
       <span className="h-px w-12 bg-olive/30" />
     </div>
   );
