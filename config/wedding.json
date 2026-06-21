@@ -3,23 +3,23 @@
     "groom": {
       "name": "Robi Firmansyah",
       "shortName": "Robi",
-      "fullName": "Robi Firmansyah, S.Kom",
-      "parents": "Putra dari Bpk. [Nama Ayah] & Ibu [Nama Ibu]",
-      "instagram": "robifirmansyah",
-      "photo": "/assets/bride-groom/groom.svg"
+      "fullName": "Robi Firmansyah",
+      "parents": "Putra dari Bpk. Indra Gunawan & Ibu Martini",
+      "instagram": "robifirmnsyah",
+      "photo": "/assets/bride-groom/groom.jpg"
     },
     "bride": {
       "name": "Tiara Nurillatiffah",
       "shortName": "Tiara",
-      "fullName": "Tiara Nurillatiffah, S.Pd",
-      "parents": "Putri dari Bpk. [Nama Ayah] & Ibu [Nama Ibu]",
-      "instagram": "tiaranurillatiffah",
-      "photo": "/assets/bride-groom/bride.svg"
+      "fullName": "Tiara Nurillatiffah",
+      "parents": "Putri dari Bpk. Enung Suherman & Ibu Amah",
+      "instagram": "nurillatiffah_",
+      "photo": "/assets/bride-groom/bride.jpg"
     }
   },
   "hero": {
     "tagline": "The Wedding Of",
-    "dateLabel": "Sabtu, 20 Desember 2026"
+    "dateLabel": "Sabtu, 5 September 2026"
   },
   "quote": {
     "ref": "QS. Ar-Rum: 21",
@@ -31,59 +31,49 @@
       "title": "First Met",
       "date": "2019",
       "story": "Pertama kali kami dipertemukan di sebuah tempat yang sederhana. Tak ada yang istimewa saat itu, hanya sebuah sapaan kecil yang ternyata menjadi awal dari segalanya.",
-      "photo": "/assets/story/story-1.svg"
+      "photo": "/assets/story/story-1.jpg"
     },
     {
       "title": "In Relationship",
       "date": "2021",
       "story": "Dari obrolan ringan menjadi cerita panjang setiap hari. Kami belajar saling memahami, tumbuh bersama, dan menyadari bahwa kebersamaan ini terasa begitu menenangkan.",
-      "photo": "/assets/story/story-2.svg"
+      "photo": "/assets/story/story-2.jpg"
     },
     {
       "title": "Engagement",
       "date": "2025",
       "story": "Dengan restu kedua keluarga, kami mantapkan langkah menuju jenjang yang lebih serius. Sebuah janji kecil yang kami rawat dengan penuh harapan.",
-      "photo": "/assets/story/story-3.svg"
+      "photo": "/assets/story/story-3.jpg"
     },
     {
       "title": "Toward Marriage",
       "date": "2026",
       "story": "Kini, dengan menyebut nama Allah, kami siap menyatukan dua hati dalam ikatan yang suci. Mohon doa restu agar diberi kelancaran sampai hari bahagia kami.",
-      "photo": "/assets/story/story-4.svg"
+      "photo": "/assets/story/story-4.jpg"
     }
   ],
   "event": {
-    "akad": {
-      "title": "Akad Nikah",
-      "date": "2026-12-20T08:00:00",
-      "dateLabel": "Sabtu, 20 Desember 2026",
-      "time": "08.00 - 10.00 WIB",
-      "venue": "Kediaman Mempelai Wanita",
-      "address": "Jl. Mawar No. 12, Kec. Lembang, Kab. Bandung Barat, Jawa Barat",
-      "mapsUrl": "https://maps.google.com/?q=Lembang+Bandung",
-      "mapsEmbed": "https://www.google.com/maps?q=Lembang+Bandung+Barat&output=embed"
-    },
     "resepsi": {
       "title": "Resepsi",
-      "date": "2026-12-20T11:00:00",
-      "dateLabel": "Sabtu, 20 Desember 2026",
-      "time": "11.00 - 14.00 WIB",
-      "venue": "Valley Garden Hall",
-      "address": "Jl. Mawar No. 12, Kec. Lembang, Kab. Bandung Barat, Jawa Barat",
-      "mapsUrl": "https://maps.google.com/?q=Lembang+Bandung",
-      "mapsEmbed": "https://www.google.com/maps?q=Lembang+Bandung+Barat&output=embed"
+      "date": "2026-09-05T10:00:00",
+      "dateLabel": "Sabtu, 5 September 2026",
+      "time": "10.00 - 14.00 WIB",
+      "venue": "Hubdam III Siliwangi",
+      "address": "Jl. Moch. Toha No.055, Ciateul, Kec. Regol, Kota Bandung, Jawa Barat 40252",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Hubdam+III+Siliwangi+Bandung",
+      "mapsEmbed": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7921.263788910059!2d107.6066144!3d-6.9345235999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e89b72429ef3%3A0xaf0cd315b57c9df1!2sHubdam%20III%20Siliwangi!5e0!3m2!1sid!2sid!4v1782062318634!5m2!1sid!2sid"
     }
   },
-  "countdownTarget": "2026-12-20T08:00:00",
+  "countdownTarget": "2026-09-05T10:00:00",
   "gallery": [
-    { "src": "/assets/gallery/gallery-1.svg", "caption": "Under The Blue", "span": "tall" },
-    { "src": "/assets/gallery/gallery-2.svg", "caption": "Our Little Heart", "span": "wide" },
-    { "src": "/assets/gallery/gallery-3.svg", "caption": "" , "span": "square" },
-    { "src": "/assets/gallery/gallery-4.svg", "caption": "Walking With You", "span": "square" },
-    { "src": "/assets/gallery/gallery-5.svg", "caption": "", "span": "tall" },
-    { "src": "/assets/gallery/gallery-6.svg", "caption": "Golden Hour", "span": "wide" },
-    { "src": "/assets/gallery/gallery-7.svg", "caption": "", "span": "square" },
-    { "src": "/assets/gallery/gallery-8.svg", "caption": "Forever Begins", "span": "square" }
+    { "src": "/assets/gallery/gallery-1.jpg", "caption": "You & Me", "span": "tall" },
+    { "src": "/assets/gallery/gallery-2.jpg", "caption": "Bloom of Love", "span": "wide" },
+    { "src": "/assets/gallery/gallery-3.jpg", "caption": "", "span": "square" },
+    { "src": "/assets/gallery/gallery-4.jpg", "caption": "Rain or Shine", "span": "square" },
+    { "src": "/assets/gallery/gallery-5.jpg", "caption": "", "span": "tall" },
+    { "src": "/assets/gallery/gallery-6.jpg", "caption": "Golden Hour", "span": "wide" },
+    { "src": "/assets/gallery/gallery-7.jpg", "caption": "", "span": "square" },
+    { "src": "/assets/gallery/gallery-8.jpg", "caption": "Forever Begins", "span": "square" }
   ],
   "gift": {
     "note": "Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Dan jika memberi adalah ungkapan tanda kasih, Anda dapat memberi kado secara cashless.",

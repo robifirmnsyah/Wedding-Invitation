@@ -71,13 +71,12 @@ function EventCard({ event }: { event: EventInfo }) {
   );
 }
 
-/** Akad & Resepsi arch cards over a mountain-valley backdrop. */
+/** Resepsi arch card over a mountain-valley backdrop. */
 export function EventDetails() {
   return (
     <section className="section-pad relative overflow-hidden bg-ivory">
-      <SectionTitle eyebrow="Save The Moment" title="Wedding Events" />
-      <div className="mx-auto mt-10 flex max-w-4xl flex-col items-center justify-center gap-10 sm:flex-row sm:items-stretch">
-        <EventCard event={config.event.akad} />
+      <SectionTitle eyebrow="Save The Moment" title="Wedding Event" />
+      <div className="mx-auto mt-10 flex max-w-4xl flex-col items-center justify-center">
         <EventCard event={config.event.resepsi} />
       </div>
     </section>
