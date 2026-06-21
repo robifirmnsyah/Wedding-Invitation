@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --olive: #708238;
+  --ivory: #faf8f3;
+  --cream: #f5f0e6;
+  --sage: #dce4d3;
+  --beige: #e9e1d3;
+  --ink: #3b3b3b;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* When the invitation is not yet opened, lock the page */
+body.locked {
+  overflow: hidden;
+  height: 100vh;
+}
+
+@layer components {
+  .section-pad {
+    @apply px-5 py-20 sm:px-8 md:py-28;
+  }
+
+  .heading-script {
+    @apply font-heading font-semibold text-olive;
+  }
+
+  /* Watercolor-textured soft paper card */
+  .paper-card {
+    background:
+      radial-gradient(120% 120% at 0% 0%, rgba(220, 228, 211, 0.55) 0%, transparent 45%),
+      radial-gradient(120% 120% at 100% 100%, rgba(233, 225, 211, 0.6) 0%, transparent 45%),
+      #faf8f3;
+    box-shadow:
+      0 10px 30px -12px rgba(86, 101, 41, 0.25),
+      inset 0 0 0 1px rgba(112, 130, 56, 0.08);
+  }
+
+  .glass-soft {
+    background: rgba(250, 248, 243, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Olive outline button */
+  .btn-olive {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-olive px-7 py-3 font-body text-sm font-medium tracking-wide text-ivory shadow-lg transition-all duration-300;
+    box-shadow: 0 8px 22px -8px rgba(86, 101, 41, 0.7);
+  }
+  .btn-olive:hover {
+    @apply bg-olive-dark;
+    transform: translateY(-2px);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-olive/40 bg-ivory/60 px-5 py-2.5 font-body text-sm text-olive-dark transition-all duration-300;
+  }
+  .btn-ghost:hover {
+    @apply bg-sage/50;
+  }
+
+  /* Decorative divider */
+  .divider-leaf {
+    @apply mx-auto my-6 flex items-center justify-center gap-3 text-olive/60;
+  }
+}
+
+/* Rope/knot circular frame for bride & groom */
+.rope-frame {
+  position: relative;
+  border-radius: 9999px;
+  padding: 10px;
+  background: conic-gradient(
+    from 0deg,
+    #b9a77f 0deg 12deg,
+    #cdbd97 12deg 24deg
+  );
+  box-shadow:
+    0 12px 30px -10px rgba(86, 101, 41, 0.4),
+    inset 0 0 0 3px rgba(112, 130, 56, 0.25);
+}
+
+/* Arch / oval shaped event card */
+.arch-card {
+  border-top-left-radius: 50% 28%;
+  border-top-right-radius: 50% 28%;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+}
+
+/* hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "couple": {
+    "groom": {
+      "name": "Robi Firmansyah",
+      "shortName": "Robi",
+      "fullName": "Robi Firmansyah, S.Kom",
+      "parents": "Putra dari Bpk. [Nama Ayah] & Ibu [Nama Ibu]",
+      "instagram": "robifirmansyah",
+      "photo": "/assets/bride-groom/groom.jpg"
+    },
+    "bride": {
+      "name": "Tiara Nurillatiffah",
+      "shortName": "Tiara",
+      "fullName": "Tiara Nurillatiffah, S.Pd",
+      "parents": "Putri dari Bpk. [Nama Ayah] & Ibu [Nama Ibu]",
+      "instagram": "tiaranurillatiffah",
+      "photo": "/assets/bride-groom/bride.jpg"
+    }
+  },
+  "hero": {
+    "tagline": "The Wedding Of",
+    "dateLabel": "Sabtu, 20 Desember 2026"
+  },
+  "quote": {
+    "ref": "QS. Ar-Rum: 21",
+    "arabic": "وَمِنْ اٰيٰتِهٖٓ اَنْ خَلَقَ لَكُمْ مِّنْ اَنْفُسِكُمْ اَزْوَاجًا لِّتَسْكُنُوْٓا اِلَيْهَا وَجَعَلَ بَيْنَكُمْ مَّوَدَّةً وَّرَحْمَةً ۗاِنَّ فِيْ ذٰلِكَ لَاٰيٰتٍ لِّقَوْمٍ يَّتَفَكَّرُوْنَ",
+    "translation": "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir."
+  },
+  "loveStory": [
+    {
+      "title": "First Met",
+      "date": "2019",
+      "story": "Pertama kali kami dipertemukan di sebuah tempat yang sederhana. Tak ada yang istimewa saat itu, hanya sebuah sapaan kecil yang ternyata menjadi awal dari segalanya.",
+      "photo": "/assets/story/story-1.jpg"
+    },
+    {
+      "title": "In Relationship",
+      "date": "2021",
+      "story": "Dari obrolan ringan menjadi cerita panjang setiap hari. Kami belajar saling memahami, tumbuh bersama, dan menyadari bahwa kebersamaan ini terasa begitu menenangkan.",
+      "photo": "/assets/story/story-2.jpg"
+    },
+    {
+      "title": "Engagement",
+      "date": "2025",
+      "story": "Dengan restu kedua keluarga, kami mantapkan langkah menuju jenjang yang lebih serius. Sebuah janji kecil yang kami rawat dengan penuh harapan.",
+      "photo": "/assets/story/story-3.jpg"
+    },
+    {
+      "title": "Toward Marriage",
+      "date": "2026",
+      "story": "Kini, dengan menyebut nama Allah, kami siap menyatukan dua hati dalam ikatan yang suci. Mohon doa restu agar diberi kelancaran sampai hari bahagia kami.",
+      "photo": "/assets/story/story-4.jpg"
+    }
+  ],
+  "event": {
+    "akad": {
+      "title": "Akad Nikah",
+      "date": "2026-12-20T08:00:00",
+      "dateLabel": "Sabtu, 20 Desember 2026",
+      "time": "08.00 - 10.00 WIB",
+      "venue": "Kediaman Mempelai Wanita",
+      "address": "Jl. Mawar No. 12, Kec. Lembang, Kab. Bandung Barat, Jawa Barat",
+      "mapsUrl": "https://maps.google.com/?q=Lembang+Bandung",
+      "mapsEmbed": "https://www.google.com/maps?q=Lembang+Bandung+Barat&output=embed"
+    },
+    "resepsi": {
+      "title": "Resepsi",
+      "date": "2026-12-20T11:00:00",
+      "dateLabel": "Sabtu, 20 Desember 2026",
+      "time": "11.00 - 14.00 WIB",
+      "venue": "Valley Garden Hall",
+      "address": "Jl. Mawar No. 12, Kec. Lembang, Kab. Bandung Barat, Jawa Barat",
+      "mapsUrl": "https://maps.google.com/?q=Lembang+Bandung",
+      "mapsEmbed": "https://www.google.com/maps?q=Lembang+Bandung+Barat&output=embed"
+    }
+  },
+  "countdownTarget": "2026-12-20T08:00:00",
+  "gallery": [
+    { "src": "/assets/gallery/gallery-1.jpg", "caption": "Under The Blue", "span": "tall" },
+    { "src": "/assets/gallery/gallery-2.jpg", "caption": "Our Little Heart", "span": "wide" },
+    { "src": "/assets/gallery/gallery-3.jpg", "caption": "" , "span": "square" },
+    { "src": "/assets/gallery/gallery-4.jpg", "caption": "Walking With You", "span": "square" },
+    { "src": "/assets/gallery/gallery-5.jpg", "caption": "", "span": "tall" },
+    { "src": "/assets/gallery/gallery-6.jpg", "caption": "Golden Hour", "span": "wide" },
+    { "src": "/assets/gallery/gallery-7.jpg", "caption": "", "span": "square" },
+    { "src": "/assets/gallery/gallery-8.jpg", "caption": "Forever Begins", "span": "square" }
+  ],
+  "gift": {
+    "note": "Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Dan jika memberi adalah ungkapan tanda kasih, Anda dapat memberi kado secara cashless.",
+    "banks": [
+      { "bank": "Bank BCA", "number": "1234567890", "holder": "Robi Firmansyah" },
+      { "bank": "Bank Mandiri", "number": "0987654321", "holder": "Tiara Nurillatiffah" }
+    ],
+    "qris": "/assets/gift/qris.png"
+  },
+  "closing": {
+    "message": "Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.",
+    "gratitude": "With heartfelt gratitude, we invite your prayers and blessings"
+  },
+  "music": "/assets/music/violin-wedding.mp3"
+}
