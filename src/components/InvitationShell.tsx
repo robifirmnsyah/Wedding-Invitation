@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useLenis } from "@/hooks/useLenis";
 import { useGuestName } from "@/hooks/useGuestName";
 import { MusicButton } from "@/components/MusicButton";
+import { SceneDivider } from "@/components/SceneDivider";
 import { Loading } from "@/sections/Loading";
 import { Hero } from "@/sections/Hero";
 import { Quote } from "@/sections/Quote";
@@ -64,13 +65,21 @@ export function InvitationShell() {
               transition={{ duration: 0.8 }}
             >
               <Quote />
+              <SceneDivider />
               <Story />
+              <SceneDivider withLeaves />
               <BrideGroom />
+              <SceneDivider />
               <SaveDate />
+              <SceneDivider withLeaves />
               <EventDetails />
+              <SceneDivider />
               <Gallery />
+              <SceneDivider withLeaves />
               <Wishes />
+              <SceneDivider />
               <Gift />
+              <SceneDivider />
               <Closing />
             </motion.div>
           )}
