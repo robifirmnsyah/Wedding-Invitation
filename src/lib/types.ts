@@ -41,6 +41,8 @@ export interface BankAccount {
   bank: string;
   number: string;
   holder: string;
+  /** optional bank logo path (e.g. /assets/payment/bca.png) */
+  logo?: string;
 }
 
 export interface WeddingConfig {
