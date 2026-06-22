@@ -18,7 +18,7 @@ export function QrisModal({
   src,
   open,
   onClose,
-  downloadName = "QRIS.jpeg",
+  downloadName = "qris1.jpeg",
 }: Props) {
   useEffect(() => {
     if (!open) return;

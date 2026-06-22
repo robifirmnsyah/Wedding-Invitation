@@ -66,22 +66,64 @@
   },
   "countdownTarget": "2026-09-05T10:00:00",
   "gallery": [
-    { "src": "/assets/gallery/gallery-1.jpg", "caption": "You & Me", "span": "tall" },
-    { "src": "/assets/gallery/gallery-2.jpg", "caption": "Bloom of Love", "span": "wide" },
-    { "src": "/assets/gallery/gallery-3.jpg", "caption": "", "span": "square" },
-    { "src": "/assets/gallery/gallery-4.jpg", "caption": "Rain or Shine", "span": "square" },
-    { "src": "/assets/gallery/gallery-5.jpg", "caption": "", "span": "tall" },
-    { "src": "/assets/gallery/gallery-6.jpg", "caption": "Golden Hour", "span": "wide" },
-    { "src": "/assets/gallery/gallery-7.jpg", "caption": "", "span": "square" },
-    { "src": "/assets/gallery/gallery-8.jpg", "caption": "Forever Begins", "span": "square" }
+    {
+      "src": "/assets/gallery/gallery-1.jpg",
+      "caption": "You & Me",
+      "span": "tall"
+    },
+    {
+      "src": "/assets/gallery/gallery-2.jpg",
+      "caption": "Bloom of Love",
+      "span": "wide"
+    },
+    {
+      "src": "/assets/gallery/gallery-3.jpg",
+      "caption": "",
+      "span": "square"
+    },
+    {
+      "src": "/assets/gallery/gallery-4.jpg",
+      "caption": "Rain or Shine",
+      "span": "square"
+    },
+    {
+      "src": "/assets/gallery/gallery-5.jpg",
+      "caption": "",
+      "span": "tall"
+    },
+    {
+      "src": "/assets/gallery/gallery-6.jpg",
+      "caption": "Golden Hour",
+      "span": "wide"
+    },
+    {
+      "src": "/assets/gallery/gallery-7.jpg",
+      "caption": "",
+      "span": "square"
+    },
+    {
+      "src": "/assets/gallery/gallery-8.jpg",
+      "caption": "Forever Begins",
+      "span": "square"
+    }
   ],
   "gift": {
     "note": "Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Dan jika memberi adalah ungkapan tanda kasih, Anda dapat memberi kado secara cashless.",
     "banks": [
-      { "bank": "Bank BCA", "number": "1450164174", "holder": "Robi Firmansyah", "logo": "/assets/payment/bca.png" },
-      { "bank": "Bank Jago", "number": "504469179343", "holder": "Tiara Nurillatiffah", "logo": "/assets/payment/jago.png" }
+      {
+        "bank": "Bank BCA",
+        "number": "1450164174",
+        "holder": "Robi Firmansyah",
+        "logo": "/assets/payment/bca.png"
+      },
+      {
+        "bank": "Bank Jago",
+        "number": "504469179343",
+        "holder": "Tiara Nurillatiffah",
+        "logo": "/assets/payment/jago.png"
+      }
     ],
-    "qris": "/assets/payment/qris.jpeg"
+    "qris": "/assets/payment/qris1.jpeg"
   },
   "closing": {
     "message": "Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.",
