@@ -21,7 +21,7 @@ function PersonCard({ person }: { person: Person }) {
             alt={person.name}
             fill
             sizes="(max-width: 640px) 12rem, 14rem"
-            className="object-cover"
+            className="object-cover object-top"
           />
         </div>
       </div>
