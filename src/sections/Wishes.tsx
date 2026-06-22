@@ -1,24 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { HiOutlinePaperAirplane } from "react-icons/hi2";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  HiOutlinePaperAirplane,
+  HiCheckBadge,
+  HiOutlineArrowUturnLeft,
+} from "react-icons/hi2";
 import { SectionTitle } from "@/components/Decor";
 import { Reveal } from "@/components/Reveal";
-import { attendanceLabel } from "@/lib/utils";
+import { useGuestName } from "@/hooks/useGuestName";
+import { attendanceLabel, relativeTime } from "@/lib/utils";
 import type { Wish } from "@/lib/types";
 
 const PAGE_SIZE = 4;
 const ATTENDANCE: Wish["attendance"][] = ["hadir", "tidak_hadir", "ragu"];
+const GUEST_FALLBACK = "Tamu Undangan";
 
-/** Guestbook: form + paginated wishes list backed by /api/wishes. */
+const COUNTERS: {
+  key: Wish["attendance"];
+  label: string;
+  ring: string;
+  text: string;
+  bg: string;
+}[] = [
+  { key: "hadir", label: "Hadir", ring: "ring-emerald-500/30", text: "text-emerald-700", bg: "bg-emerald-50" },
+  { key: "tidak_hadir", label: "Tidak Hadir", ring: "ring-rose-500/30", text: "text-rose-700", bg: "bg-rose-50" },
+  { key: "ragu", label: "Masih Ragu", ring: "ring-amber-500/30", text: "text-amber-700", bg: "bg-amber-50" },
+];
+
+/** Guestbook: RSVP counters + form + paginated wishes with replies. */
 export function Wishes() {
+  const guestName = useGuestName();
+  const isPersonalised = guestName !== GUEST_FALLBACK;
+
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [attendance, setAttendance] = useState<Wish["attendance"]>("hadir");
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
+
+  // reply thread state (one open form at a time)
+  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [replyName, setReplyName] = useState("");
+  const [replyMessage, setReplyMessage] = useState("");
+  const [replyStatus, setReplyStatus] = useState<"idle" | "sending" | "error">(
+    "idle"
+  );
 
   useEffect(() => {
     fetch("/api/wishes")
@@ -27,20 +56,39 @@ export function Wishes() {
       .catch(() => {});
   }, []);
 
+  // prefill the name with the invited guest's name once it resolves
+  useEffect(() => {
+    if (isPersonalised) {
+      setName((cur) => (cur ? cur : guestName));
+      setReplyName((cur) => (cur ? cur : guestName));
+    }
+  }, [guestName, isPersonalised]);
+
+  const counts = useMemo(() => {
+    const c = { hadir: 0, tidak_hadir: 0, ragu: 0 } as Record<
+      Wish["attendance"],
+      number
+    >;
+    for (const w of wishes) c[w.attendance] = (c[w.attendance] ?? 0) + 1;
+    return c;
+  }, [wishes]);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !message.trim()) return;
     setStatus("sending");
+    const verified =
+      isPersonalised &&
+      name.trim().toLowerCase() === guestName.trim().toLowerCase();
     try {
       const res = await fetch("/api/wishes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, message, attendance }),
+        body: JSON.stringify({ name, message, attendance, verified }),
       });
       if (!res.ok) throw new Error();
       const { wish } = await res.json();
       setWishes((prev) => [wish, ...prev]);
-      setName("");
       setMessage("");
       setAttendance("hadir");
       setStatus("idle");
@@ -49,9 +97,52 @@ export function Wishes() {
     }
   };
 
+  const submitReply = async (wishId: string) => {
+    if (!replyName.trim() || !replyMessage.trim()) return;
+    setReplyStatus("sending");
+    try {
+      const res = await fetch("/api/wishes/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wishId, name: replyName, message: replyMessage }),
+      });
+      if (!res.ok) throw new Error();
+      const { reply } = await res.json();
+      setWishes((prev) =>
+        prev.map((w) =>
+          w.id === wishId
+            ? { ...w, replies: [...(w.replies ?? []), reply] }
+            : w
+        )
+      );
+      setReplyMessage("");
+      setReplyTo(null);
+      setReplyStatus("idle");
+    } catch {
+      setReplyStatus("error");
+    }
+  };
+
   return (
     <section className="section-pad relative overflow-hidden bg-cream">
       <SectionTitle eyebrow="Send Your Love" title="Wedding Wishes" />
+
+      {/* RSVP counters */}
+      <Reveal className="mx-auto mt-8 grid max-w-md grid-cols-3 gap-3">
+        {COUNTERS.map((c) => (
+          <div
+            key={c.key}
+            className={`rounded-2xl ${c.bg} px-2 py-4 text-center shadow-sm ring-1 ${c.ring}`}
+          >
+            <p className={`font-heading text-3xl font-600 ${c.text}`}>
+              {counts[c.key]}
+            </p>
+            <p className="mt-1 font-body text-[11px] uppercase tracking-wide text-ink/60">
+              {c.label}
+            </p>
+          </div>
+        ))}
+      </Reveal>
 
       <div className="mx-auto mt-10 grid max-w-4xl gap-8 lg:grid-cols-2">
         {/* form */}
@@ -129,7 +220,7 @@ export function Wishes() {
           <p className="mb-3 font-body text-sm text-ink/60">
             {wishes.length} ucapan
           </p>
-          <div className="no-scrollbar max-h-[26rem] space-y-3 overflow-y-auto pr-1">
+          <div className="no-scrollbar max-h-[28rem] space-y-3 overflow-y-auto pr-1">
             {wishes.length === 0 && (
               <p className="rounded-xl bg-ivory/70 p-4 text-center text-sm text-ink/50">
                 Jadilah yang pertama memberi ucapan 🤍
@@ -142,17 +233,117 @@ export function Wishes() {
                 animate={{ opacity: 1, y: 0 }}
                 className="rounded-xl bg-ivory/80 p-4 shadow-sm ring-1 ring-olive/10"
               >
-                <div className="flex items-center justify-between">
-                  <p className="font-heading text-base font-600 text-olive-dark">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="flex items-center gap-1.5 font-heading text-base font-600 text-olive-dark">
                     {w.name}
+                    {w.verified && (
+                      <span
+                        className="inline-flex items-center gap-0.5 rounded-full bg-olive/10 px-1.5 py-0.5 text-[10px] font-medium text-olive"
+                        title="Tamu undangan"
+                      >
+                        <HiCheckBadge className="text-sm text-olive" />
+                        Tamu
+                      </span>
+                    )}
                   </p>
-                  <span className="rounded-full bg-sage/60 px-2 py-0.5 text-[10px] uppercase tracking-wide text-olive-dark">
+                  <span className="shrink-0 rounded-full bg-sage/60 px-2 py-0.5 text-[10px] uppercase tracking-wide text-olive-dark">
                     {attendanceLabel[w.attendance]}
                   </span>
                 </div>
+
                 <p className="mt-1 font-body text-sm leading-relaxed text-ink/75">
                   {w.message}
                 </p>
+
+                <div className="mt-2 flex items-center gap-3">
+                  <span className="font-body text-[11px] text-ink/40">
+                    {relativeTime(w.createdAt)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReplyTo((cur) => (cur === w.id ? null : w.id));
+                      setReplyStatus("idle");
+                    }}
+                    className="inline-flex items-center gap-1 font-body text-[11px] font-medium text-olive transition-colors hover:text-olive-dark"
+                  >
+                    <HiOutlineArrowUturnLeft className="text-xs" />
+                    Balas
+                  </button>
+                </div>
+
+                {/* replies */}
+                {w.replies && w.replies.length > 0 && (
+                  <ul className="mt-3 space-y-2 border-l-2 border-sage pl-3">
+                    {w.replies.map((r) => (
+                      <li key={r.id}>
+                        <div className="flex items-center gap-2">
+                          <p className="font-heading text-sm font-600 text-olive-dark">
+                            {r.name}
+                          </p>
+                          <span className="font-body text-[10px] text-ink/40">
+                            {relativeTime(r.createdAt)}
+                          </span>
+                        </div>
+                        <p className="font-body text-xs leading-relaxed text-ink/70">
+                          {r.message}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* inline reply form */}
+                <AnimatePresence initial={false}>
+                  {replyTo === w.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-3 space-y-2 rounded-lg bg-sage/20 p-3">
+                        <input
+                          value={replyName}
+                          onChange={(e) => setReplyName(e.target.value)}
+                          maxLength={60}
+                          placeholder="Nama Anda"
+                          className="w-full rounded-md border border-olive/20 bg-ivory px-3 py-1.5 text-xs outline-none focus:border-olive"
+                        />
+                        <textarea
+                          value={replyMessage}
+                          onChange={(e) => setReplyMessage(e.target.value)}
+                          maxLength={300}
+                          rows={2}
+                          placeholder={`Balas ${w.name}...`}
+                          className="w-full resize-none rounded-md border border-olive/20 bg-ivory px-3 py-1.5 text-xs outline-none focus:border-olive"
+                        />
+                        <div className="flex items-center justify-end gap-2">
+                          {replyStatus === "error" && (
+                            <span className="mr-auto text-[11px] text-red-500">
+                              Gagal mengirim.
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setReplyTo(null)}
+                            className="rounded-full px-3 py-1.5 text-xs text-ink/60 hover:text-ink"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => submitReply(w.id)}
+                            disabled={replyStatus === "sending"}
+                            className="btn-olive !px-4 !py-1.5 !text-xs disabled:opacity-60"
+                          >
+                            {replyStatus === "sending" ? "..." : "Kirim"}
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ))}
           </div>

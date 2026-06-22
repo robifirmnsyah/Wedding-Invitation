@@ -41,6 +41,8 @@ export interface BankAccount {
   bank: string;
   number: string;
   holder: string;
+  /** optional bank logo path (e.g. /assets/payment/bca.png) */
+  logo?: string;
 }
 
 export interface WeddingConfig {
@@ -71,10 +73,20 @@ export interface WeddingConfig {
   music: string;
 }
 
+export interface WishReply {
+  id: string;
+  name: string;
+  message: string;
+  createdAt: string;
+}
+
 export interface Wish {
   id: string;
   name: string;
   message: string;
   attendance: "hadir" | "tidak_hadir" | "ragu";
   createdAt: string;
+  /** true when the wish was sent by the personalised invited guest */
+  verified?: boolean;
+  replies?: WishReply[];
 }

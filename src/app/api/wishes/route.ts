@@ -12,7 +12,12 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  let body: Partial<Record<"name" | "message" | "attendance", string>>;
+  let body: {
+    name?: string;
+    message?: string;
+    attendance?: string;
+    verified?: boolean;
+  };
   try {
     body = await req.json();
   } catch {
@@ -36,6 +41,11 @@ export async function POST(req: Request) {
     );
   }
 
-  const wish = await addWish({ name, message, attendance });
+  const wish = await addWish({
+    name,
+    message,
+    attendance,
+    verified: body.verified === true,
+  });
   return NextResponse.json({ wish }, { status: 201 });
 }

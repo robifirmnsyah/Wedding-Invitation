@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import type { Wish } from "./types";
+import type { Wish, WishReply } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const FILE = path.join(DATA_DIR, "wishes.json");
@@ -28,30 +28,66 @@ export async function getWishes(): Promise<Wish[]> {
   return memory;
 }
 
-export async function addWish(input: {
-  name: string;
-  message: string;
-  attendance: Wish["attendance"];
-}): Promise<Wish> {
-  const wishes = await getWishes();
+function uid(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
-  const wish: Wish = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    name: input.name.slice(0, 60).trim(),
-    message: input.message.slice(0, 500).trim(),
-    attendance: input.attendance,
-    createdAt: new Date().toISOString(),
-  };
-
-  const next = [wish, ...wishes];
+/** Persist the current list to disk, silently falling back to memory-only. */
+async function persist(next: Wish[]): Promise<void> {
   memory = next;
-
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.writeFile(FILE, JSON.stringify(next, null, 2), "utf-8");
   } catch {
     /* read-only fs — keep in memory only */
   }
+}
 
+export async function addWish(input: {
+  name: string;
+  message: string;
+  attendance: Wish["attendance"];
+  verified?: boolean;
+}): Promise<Wish> {
+  const wishes = await getWishes();
+
+  const wish: Wish = {
+    id: uid(),
+    name: input.name.slice(0, 60).trim(),
+    message: input.message.slice(0, 500).trim(),
+    attendance: input.attendance,
+    createdAt: new Date().toISOString(),
+    verified: input.verified ?? false,
+    replies: [],
+  };
+
+  await persist([wish, ...wishes]);
   return wish;
+}
+
+/** Append a reply to an existing wish. Returns null when the wish is missing. */
+export async function addReply(input: {
+  wishId: string;
+  name: string;
+  message: string;
+}): Promise<WishReply | null> {
+  const wishes = await getWishes();
+  const target = wishes.find((w) => w.id === input.wishId);
+  if (!target) return null;
+
+  const reply: WishReply = {
+    id: uid(),
+    name: input.name.slice(0, 60).trim(),
+    message: input.message.slice(0, 300).trim(),
+    createdAt: new Date().toISOString(),
+  };
+
+  const next = wishes.map((w) =>
+    w.id === input.wishId
+      ? { ...w, replies: [...(w.replies ?? []), reply] }
+      : w
+  );
+
+  await persist(next);
+  return reply;
 }
