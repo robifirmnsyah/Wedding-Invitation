@@ -9,7 +9,7 @@ import {
 } from "react-icons/hi2";
 import { SectionTitle } from "@/components/Decor";
 import { Reveal } from "@/components/Reveal";
-import { useGuestName } from "@/hooks/useGuestName";
+import { useGuestInfo } from "@/hooks/useGuestName";
 import { attendanceLabel, relativeTime } from "@/lib/utils";
 import type { Wish } from "@/lib/types";
 
@@ -29,17 +29,33 @@ const COUNTERS: {
   { key: "ragu", label: "Masih Ragu", ring: "ring-amber-500/30", text: "text-amber-700", bg: "bg-amber-50" },
 ];
 
+interface RegisteredGuest {
+  id: string;
+  unique_code: string;
+  name: string;
+  pax: number;
+  rsvp_status: string;
+  wish_message: string;
+}
+
 /** Guestbook: RSVP counters + form + paginated wishes with replies. */
 export function Wishes() {
-  const guestName = useGuestName();
+  const guestInfo = useGuestInfo();
+  const guestName = guestInfo.name;
+  const guestCode = guestInfo.code;
   const isPersonalised = guestName !== GUEST_FALLBACK;
+  const hasInvitationCode = !!guestCode;
+
+  // Registered guest data from Supabase
+  const [registeredGuest, setRegisteredGuest] = useState<RegisteredGuest | null>(null);
+  const [guestLookupDone, setGuestLookupDone] = useState(false);
 
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [attendance, setAttendance] = useState<Wish["attendance"]>("hadir");
   const [visible, setVisible] = useState(PAGE_SIZE);
-  const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 
   // reply thread state (one open form at a time)
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -48,6 +64,33 @@ export function Wishes() {
   const [replyStatus, setReplyStatus] = useState<"idle" | "sending" | "error">(
     "idle"
   );
+
+  // Look up registered guest by unique code
+  useEffect(() => {
+    if (!guestCode) {
+      setGuestLookupDone(true);
+      return;
+    }
+
+    fetch(`/api/rsvp?code=${encodeURIComponent(guestCode)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.guest) {
+          setRegisteredGuest(d.guest);
+          // Prefill form with existing data
+          if (d.guest.rsvp_status && d.guest.rsvp_status !== "pending") {
+            setAttendance(d.guest.rsvp_status as Wish["attendance"]);
+          }
+          if (d.guest.wish_message) {
+            setMessage(d.guest.wish_message);
+          }
+        }
+        setGuestLookupDone(true);
+      })
+      .catch(() => {
+        setGuestLookupDone(true);
+      });
+  }, [guestCode]);
 
   useEffect(() => {
     fetch("/api/wishes")
@@ -58,11 +101,14 @@ export function Wishes() {
 
   // prefill the name with the invited guest's name once it resolves
   useEffect(() => {
-    if (isPersonalised) {
+    if (registeredGuest) {
+      setName(registeredGuest.name);
+      setReplyName(registeredGuest.name);
+    } else if (isPersonalised) {
       setName((cur) => (cur ? cur : guestName));
       setReplyName((cur) => (cur ? cur : guestName));
     }
-  }, [guestName, isPersonalised]);
+  }, [guestName, isPersonalised, registeredGuest]);
 
   const counts = useMemo(() => {
     const c = { hadir: 0, tidak_hadir: 0, ragu: 0 } as Record<
@@ -73,25 +119,46 @@ export function Wishes() {
     return c;
   }, [wishes]);
 
-  const submit = async (e: React.FormEvent) => {
+  const submitRsvp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !message.trim()) return;
+
+    if (!hasInvitationCode || !registeredGuest) return;
+    if (!message.trim()) return;
+
     setStatus("sending");
-    const verified =
-      isPersonalised &&
-      name.trim().toLowerCase() === guestName.trim().toLowerCase();
+
     try {
-      const res = await fetch("/api/wishes", {
+      // Submit RSVP to Supabase via the RSVP API
+      const rsvpRes = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, message, attendance, verified }),
+        body: JSON.stringify({
+          code: guestCode,
+          rsvp_status: attendance,
+          wish_message: message.trim(),
+        }),
       });
-      if (!res.ok) throw new Error();
-      const { wish } = await res.json();
-      setWishes((prev) => [wish, ...prev]);
-      setMessage("");
-      setAttendance("hadir");
-      setStatus("idle");
+
+      if (!rsvpRes.ok) throw new Error();
+
+      // Also add to the wishes guestbook (file-based) for display
+      const wishRes = await fetch("/api/wishes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: registeredGuest.name,
+          message: message.trim(),
+          attendance,
+          verified: true,
+        }),
+      });
+
+      if (wishRes.ok) {
+        const { wish } = await wishRes.json();
+        setWishes((prev) => [wish, ...prev]);
+      }
+
+      setStatus("success");
     } catch {
       setStatus("error");
     }
@@ -147,72 +214,117 @@ export function Wishes() {
       <div className="mx-auto mt-10 grid max-w-4xl gap-8 lg:grid-cols-2">
         {/* form */}
         <Reveal className="paper-card rounded-2xl p-6 shadow-md ring-1 ring-olive/10">
-          <form onSubmit={submit} className="space-y-4">
-            <div>
-              <label className="font-body text-xs uppercase tracking-widest text-ink/60">
-                Nama
-              </label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={60}
-                required
-                placeholder="Nama Anda"
-                className="mt-1 w-full rounded-lg border border-olive/20 bg-ivory px-4 py-2.5 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/40"
-              />
+          {!guestLookupDone ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-olive border-t-transparent" />
             </div>
-
-            <div>
-              <label className="font-body text-xs uppercase tracking-widest text-ink/60">
-                Kehadiran
-              </label>
-              <div className="mt-1 grid grid-cols-3 gap-2">
-                {ATTENDANCE.map((a) => (
-                  <button
-                    type="button"
-                    key={a}
-                    onClick={() => setAttendance(a)}
-                    className={`rounded-lg border px-2 py-2 text-xs transition-colors ${
-                      attendance === a
-                        ? "border-olive bg-olive text-ivory"
-                        : "border-olive/20 bg-ivory text-ink/70 hover:bg-sage/40"
-                    }`}
-                  >
-                    {attendanceLabel[a]}
-                  </button>
-                ))}
+          ) : !hasInvitationCode ? (
+            /* No invitation code — show a message */
+            <div className="py-8 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-sage/40">
+                <svg className="h-7 w-7 text-olive" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
               </div>
-            </div>
-
-            <div>
-              <label className="font-body text-xs uppercase tracking-widest text-ink/60">
-                Ucapan &amp; Doa
-              </label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                maxLength={500}
-                required
-                rows={3}
-                placeholder="Tulis ucapan dan doa terbaik Anda..."
-                className="mt-1 w-full resize-none rounded-lg border border-olive/20 bg-ivory px-4 py-2.5 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/40"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={status === "sending"}
-              className="btn-olive w-full disabled:opacity-60"
-            >
-              <HiOutlinePaperAirplane />
-              {status === "sending" ? "Mengirim..." : "Kirim Ucapan"}
-            </button>
-            {status === "error" && (
-              <p className="text-center text-xs text-red-500">
-                Gagal mengirim. Silakan coba lagi.
+              <p className="font-heading text-lg font-600 text-olive-dark">
+                RSVP Khusus Tamu Terdaftar
               </p>
-            )}
-          </form>
+              <p className="mt-2 font-body text-sm text-ink/60">
+                Untuk mengisi RSVP dan memberikan ucapan, silakan buka undangan melalui link khusus yang telah dikirimkan kepada Anda.
+              </p>
+            </div>
+          ) : !registeredGuest ? (
+            /* Invalid code */
+            <div className="py-8 text-center">
+              <p className="font-heading text-lg font-600 text-rose-600">
+                Kode Undangan Tidak Valid
+              </p>
+              <p className="mt-2 font-body text-sm text-ink/60">
+                Kode undangan yang Anda gunakan tidak ditemukan. Pastikan Anda membuka link yang benar.
+              </p>
+            </div>
+          ) : status === "success" ? (
+            /* Success message */
+            <div className="py-8 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 ring-2 ring-emerald-500/30">
+                <svg className="h-7 w-7 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+              </div>
+              <p className="font-heading text-lg font-600 text-olive-dark">
+                Terima Kasih, {registeredGuest.name}!
+              </p>
+              <p className="mt-2 font-body text-sm text-ink/60">
+                RSVP dan ucapan Anda telah tersimpan. Kami sangat menantikan kehadiran Anda.
+              </p>
+            </div>
+          ) : (
+            /* RSVP Form for registered guests */
+            <form onSubmit={submitRsvp} className="space-y-4">
+              <div className="rounded-xl bg-sage/30 p-3">
+                <div className="flex items-center gap-2">
+                  <HiCheckBadge className="text-lg text-olive" />
+                  <span className="font-heading text-sm font-600 text-olive-dark">
+                    {registeredGuest.name}
+                  </span>
+                </div>
+                <p className="mt-1 font-body text-xs text-ink/50">
+                  Kode: {registeredGuest.unique_code} · Kuota: {registeredGuest.pax} orang
+                </p>
+              </div>
+
+              <div>
+                <label className="font-body text-xs uppercase tracking-widest text-ink/60">
+                  Kehadiran
+                </label>
+                <div className="mt-1 grid grid-cols-3 gap-2">
+                  {ATTENDANCE.map((a) => (
+                    <button
+                      type="button"
+                      key={a}
+                      onClick={() => setAttendance(a)}
+                      className={`rounded-lg border px-2 py-2 text-xs transition-colors ${
+                        attendance === a
+                          ? "border-olive bg-olive text-ivory"
+                          : "border-olive/20 bg-ivory text-ink/70 hover:bg-sage/40"
+                      }`}
+                    >
+                      {attendanceLabel[a]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="font-body text-xs uppercase tracking-widest text-ink/60">
+                  Ucapan &amp; Doa
+                </label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  maxLength={500}
+                  required
+                  rows={3}
+                  placeholder="Tulis ucapan dan doa terbaik Anda..."
+                  className="mt-1 w-full resize-none rounded-lg border border-olive/20 bg-ivory px-4 py-2.5 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/40"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={status === "sending"}
+                className="btn-olive w-full disabled:opacity-60"
+              >
+                <HiOutlinePaperAirplane />
+                {status === "sending" ? "Mengirim..." : "Kirim RSVP & Ucapan"}
+              </button>
+              {status === "error" && (
+                <p className="text-center text-xs text-red-500">
+                  Gagal mengirim. Silakan coba lagi.
+                </p>
+              )}
+            </form>
+          )}
         </Reveal>
 
         {/* list */}
