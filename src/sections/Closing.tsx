@@ -12,7 +12,7 @@ export function Closing() {
   const { groom, bride } = config.couple;
 
   return (
-    <section className="relative flex min-h-[90svh] w-full items-center justify-center overflow-hidden pb-[clamp(120px,24vh,300px)]">
+    <section className="relative flex min-h-[90svh] w-full items-center justify-center overflow-hidden">
       <WatercolorValley variant="sunset" />
       <Petals count={16} direction="up" />
 

@@ -20,7 +20,7 @@ export function Gallery() {
   const items = config.gallery;
 
   return (
-    <section className="section-pad relative overflow-hidden bg-beige/80 backdrop-blur-sm">
+    <section className="section-pad relative overflow-hidden bg-beige/55 backdrop-blur-sm">
       <SectionTitle eyebrow="Captured Moments" title="Our Gallery" />
 
       <div className="mx-auto mt-10 grid max-w-4xl auto-rows-[140px] grid-cols-2 gap-3 sm:auto-rows-[180px] sm:grid-cols-4">

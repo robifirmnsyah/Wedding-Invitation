@@ -10,7 +10,7 @@ export function Quote() {
   const { quote } = config;
 
   return (
-    <section className="section-pad relative overflow-hidden bg-cream/85 backdrop-blur-sm">
+    <section className="section-pad relative overflow-hidden bg-cream/55 backdrop-blur-sm">
       <div
         className="pointer-events-none absolute inset-0 opacity-60"
         style={{
@@ -36,6 +36,21 @@ export function Quote() {
           “{quote.translation}”
         </p>
       </Reveal>
+
+      {/* Reserve room so the verse never sits behind the meadow art below */}
+      <div aria-hidden className="h-[clamp(110px,20vw,300px)]" />
+
+      {/* Meadow footer — grass, wildflowers & bunny pinned to the bottom of THIS
+          section (scrolls with it). `100% auto` + bottom keeps the art full-width
+          and uncropped, so the bunny is never cut off. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[clamp(130px,24vw,340px)] bg-bottom bg-no-repeat"
+        style={{
+          backgroundImage: "url(/assets/backgrounds/foreground.png)",
+          backgroundSize: "100% auto",
+        }}
+      />
     </section>
   );
 }

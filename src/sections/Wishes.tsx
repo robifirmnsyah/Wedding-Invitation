@@ -191,7 +191,7 @@ export function Wishes() {
   };
 
   return (
-    <section className="section-pad relative overflow-hidden bg-cream/85 backdrop-blur-sm">
+    <section className="section-pad relative overflow-hidden bg-cream/60 backdrop-blur-sm">
       <SectionTitle eyebrow="Send Your Love" title="Wedding Wishes" />
 
       <div className="mx-auto mt-10 grid max-w-4xl gap-8 lg:grid-cols-2">
