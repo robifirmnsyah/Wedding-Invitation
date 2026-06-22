@@ -24,7 +24,7 @@ export function SaveDate() {
   const t = useCountdown(config.countdownTarget);
 
   return (
-    <section className="section-pad relative overflow-hidden bg-cream">
+    <section className="section-pad relative overflow-hidden bg-cream/85 backdrop-blur-sm">
       <Petals count={10} />
       <SectionTitle eyebrow="Save The Date" title="Counting The Days" />
 

@@ -21,7 +21,8 @@ function PersonCard({ person }: { person: Person }) {
             alt={person.name}
             fill
             sizes="(max-width: 640px) 12rem, 14rem"
-            className="object-cover object-[center_75%]"
+            className="object-cover"
+            style={{ objectPosition: "center 20%" }}
           />
         </div>
       </div>
@@ -49,7 +50,7 @@ export function BrideGroom() {
   const { groom, bride } = config.couple;
 
   return (
-    <section className="section-pad relative overflow-hidden bg-sage/40">
+    <section className="section-pad relative overflow-hidden bg-sage/55 backdrop-blur-sm">
       <div
         className="pointer-events-none absolute inset-0 opacity-50"
         style={{

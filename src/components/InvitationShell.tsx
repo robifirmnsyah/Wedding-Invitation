@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useLenis } from "@/hooks/useLenis";
 import { useGuestName } from "@/hooks/useGuestName";
 import { MusicButton } from "@/components/MusicButton";
+import { StaticBackdrop } from "@/components/StaticBackdrop";
 import { Loading } from "@/sections/Loading";
 import { Hero } from "@/sections/Hero";
 import { Quote } from "@/sections/Quote";
@@ -63,6 +64,9 @@ export function InvitationShell() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8 }}
             >
+              {/* Static mountain background + foreground meadow, fixed across
+                  every section so they stay still while content scrolls. */}
+              <StaticBackdrop />
               <Quote />
               <Story />
               <BrideGroom />

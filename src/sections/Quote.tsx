@@ -10,7 +10,7 @@ export function Quote() {
   const { quote } = config;
 
   return (
-    <section className="section-pad relative overflow-hidden bg-cream">
+    <section className="section-pad relative overflow-hidden bg-cream/85 backdrop-blur-sm">
       <div
         className="pointer-events-none absolute inset-0 opacity-60"
         style={{

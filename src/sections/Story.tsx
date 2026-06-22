@@ -49,7 +49,7 @@ export function Story() {
   }, []);
 
   return (
-    <section ref={root} className="section-pad relative overflow-hidden bg-ivory">
+    <section ref={root} className="section-pad relative overflow-hidden bg-ivory/85 backdrop-blur-sm">
       <Petals count={8} />
       <SectionTitle eyebrow="Our Journey" title="Our Love Story" />
 

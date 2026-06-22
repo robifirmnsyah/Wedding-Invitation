@@ -74,7 +74,7 @@ function EventCard({ event }: { event: EventInfo }) {
 /** Resepsi arch card over a mountain-valley backdrop. */
 export function EventDetails() {
   return (
-    <section className="section-pad relative overflow-hidden bg-ivory">
+    <section className="section-pad relative overflow-hidden bg-ivory/85 backdrop-blur-sm">
       <SectionTitle eyebrow="Save The Moment" title="Wedding Event" />
       <div className="mx-auto mt-10 flex max-w-4xl flex-col items-center justify-center">
         <EventCard event={config.event.resepsi} />

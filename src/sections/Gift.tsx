@@ -43,7 +43,7 @@ export function Gift() {
   const coupleNames = `${config.couple.groom.shortName}-${config.couple.bride.shortName}`;
 
   return (
-    <section className="section-pad relative overflow-hidden bg-ivory">
+    <section className="section-pad relative overflow-hidden bg-ivory/85 backdrop-blur-sm">
       <div className="relative">
         <div className="flex items-center justify-center gap-3 text-olive">
           <motion.span

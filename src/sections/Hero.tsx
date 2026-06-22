@@ -97,7 +97,7 @@ export function Hero({ guestName, opened, onOpen }: Props) {
       {/* gentle scroll hint once opened */}
       {opened && (
         <motion.div
-          className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-olive-dark/70"
+          className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 text-olive-dark/70"
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.8, repeat: Infinity }}
         >
