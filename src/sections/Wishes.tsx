@@ -17,19 +17,7 @@ const PAGE_SIZE = 4;
 const ATTENDANCE: Wish["attendance"][] = ["hadir", "tidak_hadir", "ragu"];
 const GUEST_FALLBACK = "Tamu Undangan";
 
-const COUNTERS: {
-  key: Wish["attendance"];
-  label: string;
-  ring: string;
-  text: string;
-  bg: string;
-}[] = [
-  { key: "hadir", label: "Hadir", ring: "ring-emerald-500/30", text: "text-emerald-700", bg: "bg-emerald-50" },
-  { key: "tidak_hadir", label: "Tidak Hadir", ring: "ring-rose-500/30", text: "text-rose-700", bg: "bg-rose-50" },
-  { key: "ragu", label: "Masih Ragu", ring: "ring-amber-500/30", text: "text-amber-700", bg: "bg-amber-50" },
-];
-
-/** Guestbook: RSVP counters + form + paginated wishes with replies. */
+/** Guestbook: form + paginated wishes with replies. */
 export function Wishes() {
   const guestName = useGuestName();
   const isPersonalised = guestName !== GUEST_FALLBACK;
@@ -63,15 +51,6 @@ export function Wishes() {
       setReplyName((cur) => (cur ? cur : guestName));
     }
   }, [guestName, isPersonalised]);
-
-  const counts = useMemo(() => {
-    const c = { hadir: 0, tidak_hadir: 0, ragu: 0 } as Record<
-      Wish["attendance"],
-      number
-    >;
-    for (const w of wishes) c[w.attendance] = (c[w.attendance] ?? 0) + 1;
-    return c;
-  }, [wishes]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,23 +105,6 @@ export function Wishes() {
   return (
     <section className="section-pad relative overflow-hidden bg-cream">
       <SectionTitle eyebrow="Send Your Love" title="Wedding Wishes" />
-
-      {/* RSVP counters */}
-      <Reveal className="mx-auto mt-8 grid max-w-md grid-cols-3 gap-3">
-        {COUNTERS.map((c) => (
-          <div
-            key={c.key}
-            className={`rounded-2xl ${c.bg} px-2 py-4 text-center shadow-sm ring-1 ${c.ring}`}
-          >
-            <p className={`font-heading text-3xl font-600 ${c.text}`}>
-              {counts[c.key]}
-            </p>
-            <p className="mt-1 font-body text-[11px] uppercase tracking-wide text-ink/60">
-              {c.label}
-            </p>
-          </div>
-        ))}
-      </Reveal>
 
       <div className="mx-auto mt-10 grid max-w-4xl gap-8 lg:grid-cols-2">
         {/* form */}
