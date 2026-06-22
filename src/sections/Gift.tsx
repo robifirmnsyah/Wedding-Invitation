@@ -68,13 +68,19 @@ export function Gift() {
               >
                 <div>
                   {b.logo ? (
-                    <span className="relative block h-7 w-24">
+                    <span className="relative flex h-8 w-28 items-center">
                       <Image
                         src={b.logo}
                         alt={b.bank}
                         fill
                         sizes="6rem"
-                        className="object-contain object-left"
+                        className={`object-contain object-left ${
+                          b.bank.toLowerCase().includes("bca") 
+                            ? "scale-[1.5] origin-left" 
+                            : b.bank.toLowerCase().includes("jago")
+                            ? "scale-90 origin-left"
+                            : ""
+                        }`}
                       />
                     </span>
                   ) : (

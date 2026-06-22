@@ -194,23 +194,6 @@ export function Wishes() {
     <section className="section-pad relative overflow-hidden bg-cream">
       <SectionTitle eyebrow="Send Your Love" title="Wedding Wishes" />
 
-      {/* RSVP counters */}
-      <Reveal className="mx-auto mt-8 grid max-w-md grid-cols-3 gap-3">
-        {COUNTERS.map((c) => (
-          <div
-            key={c.key}
-            className={`rounded-2xl ${c.bg} px-2 py-4 text-center shadow-sm ring-1 ${c.ring}`}
-          >
-            <p className={`font-heading text-3xl font-600 ${c.text}`}>
-              {counts[c.key]}
-            </p>
-            <p className="mt-1 font-body text-[11px] uppercase tracking-wide text-ink/60">
-              {c.label}
-            </p>
-          </div>
-        ))}
-      </Reveal>
-
       <div className="mx-auto mt-10 grid max-w-4xl gap-8 lg:grid-cols-2">
         {/* form */}
         <Reveal className="paper-card rounded-2xl p-6 shadow-md ring-1 ring-olive/10">
