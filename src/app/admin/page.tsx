@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
+import { getCategoryColor } from "@/lib/colors";
 
 interface Stats {
   total: number;
@@ -11,11 +12,18 @@ interface Stats {
   pending: number;
   total_pax: number;
   hadir_pax: number;
+  groom: number;
+  groom_pax: number;
+  bride: number;
+  bride_pax: number;
 }
 
 interface CategoryBreakdown {
   name: string;
+  side: string;
+  color: string;
   count: number;
+  pax: number;
 }
 
 const STAT_CARDS = [
@@ -132,6 +140,63 @@ export default function AdminDashboardPage() {
               ))}
             </div>
 
+            {/* Per-side totals: Pengantin Pria vs Pengantin Wanita */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {[
+                {
+                  label: "Tamu Pengantin Pria",
+                  count: stats.groom,
+                  pax: stats.groom_pax,
+                  gradient: "from-sky-500 to-blue-600",
+                  ring: "ring-sky-500/20",
+                },
+                {
+                  label: "Tamu Pengantin Wanita",
+                  count: stats.bride,
+                  pax: stats.bride_pax,
+                  gradient: "from-pink-500 to-rose-600",
+                  ring: "ring-pink-500/20",
+                },
+              ].map((side) => {
+                const pct =
+                  stats.total > 0
+                    ? Math.round((side.count / stats.total) * 100)
+                    : 0;
+                return (
+                  <div
+                    key={side.label}
+                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+                        {side.label}
+                      </h3>
+                      <span
+                        className={`rounded-full bg-gradient-to-r ${side.gradient} px-2.5 py-0.5 text-xs font-semibold text-white`}
+                      >
+                        {pct}%
+                      </span>
+                    </div>
+                    <div className="mt-3 flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-slate-900">
+                        {side.count}
+                      </span>
+                      <span className="text-sm text-slate-500">tamu</span>
+                      <span className="ml-2 text-sm font-medium text-slate-400">
+                        · {side.pax} kursi
+                      </span>
+                    </div>
+                    <div className="mt-3 h-2 w-full rounded-full bg-slate-100">
+                      <div
+                        className={`h-2 rounded-full bg-gradient-to-r ${side.gradient} transition-all duration-500`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             {/* Secondary stats row */}
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {/* Total PAX */}
@@ -186,19 +251,34 @@ export default function AdminDashboardPage() {
                       Belum ada data kategori.
                     </p>
                   ) : (
-                    categoryBreakdown.map((cat) => (
-                      <div
-                        key={cat.name}
-                        className="flex items-center justify-between"
-                      >
-                        <span className="text-sm text-slate-700">
-                          {cat.name}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                          {cat.count} tamu
-                        </span>
-                      </div>
-                    ))
+                    categoryBreakdown.map((cat, i) => {
+                      const colorInfo = getCategoryColor(cat.color || "slate");
+                      const sideLabel =
+                        cat.side === "bride" ? "Wanita" : "Pria";
+                      return (
+                        <div
+                          key={`${cat.name}-${cat.side}-${i}`}
+                          className="flex items-center justify-between gap-3"
+                        >
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <span
+                              className={`h-3 w-3 shrink-0 rounded-full ${colorInfo.bg} ${colorInfo.border} border`}
+                            />
+                            <span className="truncate text-sm text-slate-700">
+                              {cat.name}
+                            </span>
+                            <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                              {sideLabel}
+                            </span>
+                          </div>
+                          <span
+                            className={`shrink-0 rounded-full ${colorInfo.bg} ${colorInfo.text} px-3 py-1 text-xs font-semibold`}
+                          >
+                            {cat.count} tamu · {cat.pax} kursi
+                          </span>
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </div>

@@ -74,6 +74,67 @@ export async function POST(req: Request) {
   return NextResponse.json({ category: data }, { status: 201 });
 }
 
+/** PATCH /api/admin/categories — update a category's name and/or color */
+export async function PATCH(req: Request) {
+  let body: { id?: string; name?: string; color?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const id = (body.id ?? "").trim();
+  if (!id) {
+    return NextResponse.json({ error: "ID wajib diisi." }, { status: 400 });
+  }
+
+  const updates: { name?: string; color?: string } = {};
+
+  if (body.name !== undefined) {
+    const name = body.name.trim().slice(0, 100);
+    if (!name) {
+      return NextResponse.json(
+        { error: "Nama kategori wajib diisi." },
+        { status: 400 }
+      );
+    }
+    updates.name = name;
+  }
+
+  if (body.color !== undefined) {
+    updates.color = body.color.trim().slice(0, 50) || "slate";
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json(
+      { error: "Tidak ada perubahan." },
+      { status: 400 }
+    );
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("guest_categories")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      return NextResponse.json(
+        { error: "Kategori dengan nama ini sudah ada." },
+        { status: 409 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Gagal memperbarui kategori." },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ category: data });
+}
+
 /** DELETE /api/admin/categories — delete a category by id */
 export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);

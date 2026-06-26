@@ -5,10 +5,10 @@ export const dynamic = "force-dynamic";
 
 /** GET /api/admin/stats — dashboard statistics */
 export async function GET() {
-  // Get all guests
+  // Get all guests with side + category info
   const { data: guests, error } = await supabaseAdmin
     .from("guests")
-    .select("rsvp_status, pax");
+    .select("rsvp_status, pax, side, category_id, guest_categories(name, side, color)");
 
   if (error) {
     return NextResponse.json(
@@ -25,14 +25,29 @@ export async function GET() {
     pending: 0,
     total_pax: 0,
     hadir_pax: 0,
+    // Per-side totals (groom = pria, bride = wanita)
+    groom: 0,
+    groom_pax: 0,
+    bride: 0,
+    bride_pax: 0,
   };
 
   for (const g of guests) {
-    stats.total_pax += g.pax ?? 1;
+    const pax = g.pax ?? 1;
+    stats.total_pax += pax;
+
+    if (g.side === "bride") {
+      stats.bride++;
+      stats.bride_pax += pax;
+    } else {
+      stats.groom++;
+      stats.groom_pax += pax;
+    }
+
     switch (g.rsvp_status) {
       case "hadir":
         stats.hadir++;
-        stats.hadir_pax += g.pax ?? 1;
+        stats.hadir_pax += pax;
         break;
       case "tidak_hadir":
         stats.tidak_hadir++;
@@ -45,43 +60,37 @@ export async function GET() {
     }
   }
 
-  // Get category breakdown
-  const { data: categories } = await supabaseAdmin
-    .from("guest_categories")
-    .select("id, name");
+  // Category breakdown — keyed by category id so identically named
+  // categories on different sides stay separate.
+  const catMap: Record<
+    string,
+    { name: string; side: string; color: string; count: number; pax: number }
+  > = {};
 
-  const categoryBreakdown = [];
-  if (categories) {
-    for (const cat of categories) {
-      const catGuests = guests.filter(
-        // We need to fetch with category_id for this
-        () => false
-      );
-      categoryBreakdown.push({
-        name: cat.name,
-        count: catGuests.length,
-      });
+  for (const g of guests) {
+    const cat = g.guest_categories as unknown as
+      | { name: string; side: string; color: string }
+      | null;
+    const key = g.category_id ?? "none";
+    if (!catMap[key]) {
+      catMap[key] = {
+        name: cat?.name ?? "Tanpa Kategori",
+        side: cat?.side ?? g.side ?? "groom",
+        color: cat?.color ?? "slate",
+        count: 0,
+        pax: 0,
+      };
     }
+    catMap[key].count++;
+    catMap[key].pax += g.pax ?? 1;
   }
 
-  // Better approach: get guest counts per category
-  const { data: guestsWithCat } = await supabaseAdmin
-    .from("guests")
-    .select("category_id, guest_categories(name)");
-
-  const catMap: Record<string, { name: string; count: number }> = {};
-  if (guestsWithCat) {
-    for (const g of guestsWithCat) {
-      const catName =
-        (g.guest_categories as unknown as { name: string })?.name ??
-        "Tanpa Kategori";
-      if (!catMap[catName]) catMap[catName] = { name: catName, count: 0 };
-      catMap[catName].count++;
-    }
-  }
+  const categoryBreakdown = Object.values(catMap).sort(
+    (a, b) => b.count - a.count
+  );
 
   return NextResponse.json({
     stats,
-    categoryBreakdown: Object.values(catMap),
+    categoryBreakdown,
   });
 }
