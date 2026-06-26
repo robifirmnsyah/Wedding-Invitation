@@ -97,8 +97,8 @@ export default function AdminDashboardPage() {
       <div className="space-y-8">
         {/* Page header */}
         <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Dashboard</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Ringkasan data tamu undangan
           </p>
         </div>
@@ -110,11 +110,11 @@ export default function AdminDashboardPage() {
         ) : stats ? (
           <>
             {/* Stats cards */}
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
               {STAT_CARDS.map((card) => (
                 <div
                   key={card.key}
-                  className={`group relative overflow-hidden rounded-2xl border border-white/5 bg-slate-900/50 p-5 transition-all hover:border-white/10`}
+                  className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md sm:p-5`}
                 >
                   <div
                     className={`absolute -right-4 -top-4 h-20 w-20 rounded-full bg-gradient-to-br ${card.gradient} opacity-10 blur-2xl transition-opacity group-hover:opacity-20`}
@@ -122,7 +122,7 @@ export default function AdminDashboardPage() {
                   <div className={`mb-3 inline-flex rounded-xl bg-gradient-to-br ${card.gradient} p-2.5 text-white shadow-lg ${card.shadow}`}>
                     {card.icon}
                   </div>
-                  <p className="text-3xl font-bold text-white">
+                  <p className="text-2xl font-bold text-slate-900 sm:text-3xl">
                     {stats[card.key]}
                   </p>
                   <p className="mt-1 text-xs text-slate-500 uppercase tracking-wider">
@@ -135,18 +135,18 @@ export default function AdminDashboardPage() {
             {/* Secondary stats row */}
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {/* Total PAX */}
-              <div className="rounded-2xl border border-white/5 bg-slate-900/50 p-6">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
                   Estimasi Total Kursi
                 </h3>
                 <div className="mt-4 flex items-baseline gap-3">
-                  <span className="text-4xl font-bold text-white">
+                  <span className="text-4xl font-bold text-slate-900">
                     {stats.total_pax}
                   </span>
                   <span className="text-sm text-slate-500">kursi total</span>
                 </div>
                 <div className="mt-2 flex items-baseline gap-3">
-                  <span className="text-2xl font-bold text-emerald-400">
+                  <span className="text-2xl font-bold text-emerald-600">
                     {stats.hadir_pax}
                   </span>
                   <span className="text-sm text-slate-500">
@@ -155,7 +155,7 @@ export default function AdminDashboardPage() {
                 </div>
                 {stats.total_pax > 0 && (
                   <div className="mt-4">
-                    <div className="h-2 w-full rounded-full bg-slate-800">
+                    <div className="h-2 w-full rounded-full bg-slate-100">
                       <div
                         className="h-2 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-500"
                         style={{
@@ -176,13 +176,13 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Category breakdown */}
-              <div className="rounded-2xl border border-white/5 bg-slate-900/50 p-6">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
                   Berdasarkan Kategori
                 </h3>
                 <div className="mt-4 space-y-3">
                   {categoryBreakdown.length === 0 ? (
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-400">
                       Belum ada data kategori.
                     </p>
                   ) : (
@@ -191,10 +191,10 @@ export default function AdminDashboardPage() {
                         key={cat.name}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-sm text-slate-300">
+                        <span className="text-sm text-slate-700">
                           {cat.name}
                         </span>
-                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300">
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
                           {cat.count} tamu
                         </span>
                       </div>
@@ -206,19 +206,19 @@ export default function AdminDashboardPage() {
 
             {/* RSVP response rate */}
             {stats.total > 0 && (
-              <div className="rounded-2xl border border-white/5 bg-slate-900/50 p-6">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
                   Response Rate RSVP
                 </h3>
-                <div className="mt-4 grid grid-cols-4 gap-4">
+                <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
                   {[
                     { label: "Hadir", value: stats.hadir, color: "bg-emerald-500" },
                     { label: "Tidak Hadir", value: stats.tidak_hadir, color: "bg-rose-500" },
                     { label: "Ragu", value: stats.ragu, color: "bg-amber-500" },
-                    { label: "Pending", value: stats.pending, color: "bg-slate-600" },
+                    { label: "Pending", value: stats.pending, color: "bg-slate-400" },
                   ].map((item) => (
                     <div key={item.label} className="text-center">
-                      <div className="mx-auto mb-2 h-3 w-full rounded-full bg-slate-800">
+                      <div className="mx-auto mb-2 h-3 w-full rounded-full bg-slate-100">
                         <div
                           className={`h-3 rounded-full ${item.color} transition-all duration-500`}
                           style={{
@@ -228,8 +228,8 @@ export default function AdminDashboardPage() {
                           }}
                         />
                       </div>
-                      <p className="text-xs text-slate-400">{item.label}</p>
-                      <p className="text-lg font-bold text-white">
+                      <p className="text-xs text-slate-500">{item.label}</p>
+                      <p className="text-lg font-bold text-slate-900">
                         {Math.round((item.value / stats.total) * 100)}%
                       </p>
                     </div>
@@ -239,8 +239,8 @@ export default function AdminDashboardPage() {
             )}
           </>
         ) : (
-          <div className="rounded-2xl border border-white/5 bg-slate-900/50 p-12 text-center">
-            <p className="text-slate-400">
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+            <p className="text-slate-500">
               Gagal memuat data. Pastikan Supabase sudah terkonfigurasi dengan benar.
             </p>
           </div>
