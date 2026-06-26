@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { AdminShell } from "@/components/AdminShell";
+import { useSearchParams } from "next/navigation";
 
 interface Category {
   id: string;
@@ -9,7 +10,11 @@ interface Category {
   created_at: string;
 }
 
-export default function AdminCategoriesPage() {
+function CategoriesContent() {
+  const searchParams = useSearchParams();
+  const side = searchParams.get("side") === "bride" ? "bride" : "groom";
+  const sideLabel = side === "bride" ? "Pengantin Wanita" : "Pengantin Pria";
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
@@ -18,14 +23,15 @@ export default function AdminCategoriesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/categories")
+    setLoading(true);
+    fetch(`/api/admin/categories?side=${side}`)
       .then((r) => r.json())
       .then((d) => {
         setCategories(d.categories ?? []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [side]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +45,7 @@ export default function AdminCategoriesPage() {
       const res = await fetch("/api/admin/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
+        body: JSON.stringify({ name: trimmed, side }),
       });
 
       if (!res.ok) {
@@ -78,7 +84,9 @@ export default function AdminCategoriesPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Kategori Tamu</h1>
+          <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">
+            Kategori Tamu <span className="text-slate-400 font-normal">· {sideLabel}</span>
+          </h1>
           <p className="mt-1 text-sm text-slate-500">
             Kelola kategori untuk mengelompokkan tamu undangan
           </p>
@@ -194,5 +202,13 @@ export default function AdminCategoriesPage() {
         )}
       </div>
     </AdminShell>
+  );
+}
+
+export default function AdminCategoriesPage() {
+  return (
+    <Suspense fallback={<div className="flex py-20 items-center justify-center">Memuat...</div>}>
+      <CategoriesContent />
+    </Suspense>
   );
 }

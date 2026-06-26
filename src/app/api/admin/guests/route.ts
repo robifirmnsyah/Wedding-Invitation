@@ -1,27 +1,24 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import crypto from "crypto";
+import { generateFreshGuestCode, getCategorySide, normalizeSide } from "@/lib/guests";
 
 export const dynamic = "force-dynamic";
 
-/** Generate a unique 5-character alphanumeric code */
-function generateUniqueCode(): string {
-  // Use crypto for randomness, then take 5 chars
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No 0/O/1/I to avoid confusion
-  let code = "";
-  const bytes = crypto.randomBytes(5);
-  for (let i = 0; i < 5; i++) {
-    code += chars[bytes[i] % chars.length];
-  }
-  return code;
-}
-
 /** GET /api/admin/guests — list all guests with category info */
-export async function GET() {
-  const { data, error } = await supabaseAdmin
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const side = searchParams.get("side");
+
+  let query = supabaseAdmin
     .from("guests")
     .select("*, guest_categories(name)")
     .order("created_at", { ascending: false });
+
+  if (side) {
+    query = query.eq("side", normalizeSide(side));
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json(
@@ -41,6 +38,7 @@ export async function POST(req: Request) {
     pax?: number;
     contact_type?: string;
     contact?: string;
+    side?: string;
   };
   try {
     body = await req.json();
@@ -55,24 +53,23 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
-
-  // Generate unique code with collision retry
-  let uniqueCode = generateUniqueCode();
-  let attempts = 0;
-  const maxAttempts = 10;
-  while (attempts < maxAttempts) {
-    const { data: existing } = await supabaseAdmin
-      .from("guests")
-      .select("id")
-      .eq("unique_code", uniqueCode)
-      .single();
-
-    if (!existing) break;
-    uniqueCode = generateUniqueCode();
-    attempts++;
+  
+  if (!body.category_id) {
+    return NextResponse.json(
+      { error: "Kategori wajib diisi." },
+      { status: 400 }
+    );
   }
 
-  if (attempts >= maxAttempts) {
+  // Derive side from category, fallback to provided side or default 'groom'
+  let side = body.side ? normalizeSide(body.side) : "groom";
+  const catSide = await getCategorySide(supabaseAdmin, body.category_id);
+  if (catSide) {
+    side = catSide;
+  }
+
+  const uniqueCode = await generateFreshGuestCode(supabaseAdmin);
+  if (!uniqueCode) {
     return NextResponse.json(
       { error: "Gagal membuat kode unik. Coba lagi." },
       { status: 500 }
@@ -88,7 +85,8 @@ export async function POST(req: Request) {
     .insert({
       unique_code: uniqueCode,
       name,
-      category_id: body.category_id || null,
+      category_id: body.category_id,
+      side,
       pax,
       contact_type: contactType,
       contact,
@@ -129,8 +127,17 @@ export async function PUT(req: Request) {
   const updates: Record<string, unknown> = {};
   if (body.name !== undefined)
     updates.name = (body.name ?? "").trim().slice(0, 100);
-  if (body.category_id !== undefined)
+  
+  if (body.category_id !== undefined) {
     updates.category_id = body.category_id || null;
+    if (body.category_id) {
+      const catSide = await getCategorySide(supabaseAdmin, body.category_id);
+      if (catSide) {
+        updates.side = catSide;
+      }
+    }
+  }
+
   if (body.pax !== undefined) updates.pax = Math.max(1, Math.min(body.pax, 20));
   if (body.contact_type !== undefined)
     updates.contact_type = (body.contact_type ?? "").trim().slice(0, 50);

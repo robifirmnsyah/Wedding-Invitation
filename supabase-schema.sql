@@ -4,28 +4,40 @@
 -- ============================================================
 
 -- 1) Tabel Kategori Tamu (Keluarga Bapak, Teman Kantor, dll.)
+--    `side` memisahkan kategori milik pihak Pengantin Wanita (bride) & Pria (groom).
 CREATE TABLE IF NOT EXISTS guest_categories (
   id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name        TEXT NOT NULL UNIQUE,
-  created_at  TIMESTAMPTZ DEFAULT now()
+  name        TEXT NOT NULL,
+  side        TEXT NOT NULL DEFAULT 'groom'
+              CHECK (side IN ('bride', 'groom')),
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  -- Nama kategori unik per-sisi, jadi "Teman Kantor" boleh ada di bride & groom.
+  UNIQUE (name, side)
 );
 
--- Seed default categories
-INSERT INTO guest_categories (name) VALUES
-  ('Keluarga Bapak'),
-  ('Keluarga Ibu'),
-  ('Teman Kantor'),
-  ('Teman Kuliah'),
-  ('Teman SMA'),
-  ('Tetangga')
-ON CONFLICT (name) DO NOTHING;
+-- Seed default categories (per sisi)
+INSERT INTO guest_categories (name, side) VALUES
+  ('Keluarga', 'groom'),
+  ('Teman Kantor', 'groom'),
+  ('Teman Kuliah', 'groom'),
+  ('Teman SMA', 'groom'),
+  ('Tetangga', 'groom'),
+  ('Keluarga', 'bride'),
+  ('Teman Kantor', 'bride'),
+  ('Teman Kuliah', 'bride'),
+  ('Teman SMA', 'bride'),
+  ('Tetangga', 'bride')
+ON CONFLICT (name, side) DO NOTHING;
 
 -- 2) Tabel Tamu Undangan
+--    `side` menandai tamu milik pihak bride/groom (disinkronkan dari kategori).
 CREATE TABLE IF NOT EXISTS guests (
   id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   unique_code   TEXT NOT NULL UNIQUE,
   name          TEXT NOT NULL,
   category_id   UUID REFERENCES guest_categories(id) ON DELETE SET NULL,
+  side          TEXT NOT NULL DEFAULT 'groom'
+                CHECK (side IN ('bride', 'groom')),
   pax           INTEGER NOT NULL DEFAULT 1,
   contact_type  TEXT NOT NULL DEFAULT 'WhatsApp',
   contact       TEXT NOT NULL DEFAULT '',
@@ -38,6 +50,8 @@ CREATE TABLE IF NOT EXISTS guests (
 
 -- Index for fast lookup by unique_code (used in invitation URL)
 CREATE INDEX IF NOT EXISTS idx_guests_unique_code ON guests (unique_code);
+-- Index for per-side filtering in the admin panel
+CREATE INDEX IF NOT EXISTS idx_guests_side ON guests (side);
 
 -- 3) Enable Row Level Security (RLS) — but allow all via service role
 ALTER TABLE guest_categories ENABLE ROW LEVEL SECURITY;

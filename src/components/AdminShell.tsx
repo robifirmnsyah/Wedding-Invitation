@@ -1,20 +1,21 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 
-const NAV_ITEMS = [
+const DASHBOARD_ITEM = {
+  href: "/admin",
+  label: "Dashboard",
+  icon: (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />
+    </svg>
+  ),
+};
+
+const SIDE_ITEMS = [
   {
-    href: "/admin",
-    label: "Dashboard",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />
-      </svg>
-    ),
-  },
-  {
-    href: "/admin/guests",
+    hrefPath: "/admin/guests",
     label: "Tamu Undangan",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -23,7 +24,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: "/admin/categories",
+    hrefPath: "/admin/categories",
     label: "Kategori",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -34,11 +35,14 @@ const NAV_ITEMS = [
   },
 ];
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+function AdminShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  const currentSide = searchParams.get("side");
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -49,6 +53,37 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     }
     window.location.href = "/admin/login";
   };
+
+  const renderSideItems = (side: "bride" | "groom", title: string) => (
+    <div className="mt-6">
+      <h3 className="px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+        {title}
+      </h3>
+      <div className="space-y-1">
+        {SIDE_ITEMS.map((item) => {
+          const href = `${item.hrefPath}?side=${side}`;
+          const isActive = pathname === item.hrefPath && currentSide === side;
+          return (
+            <button
+              key={href}
+              onClick={() => {
+                router.push(href);
+                setSidebarOpen(false);
+              }}
+              className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+                isActive
+                  ? "bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -80,27 +115,26 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4">
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <button
-                key={item.href}
-                onClick={() => {
-                  router.push(item.href);
-                  setSidebarOpen(false);
-                }}
-                className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-                  isActive
-                    ? "bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-1">
+            <button
+              onClick={() => {
+                router.push(DASHBOARD_ITEM.href);
+                setSidebarOpen(false);
+              }}
+              className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+                pathname === DASHBOARD_ITEM.href && !currentSide
+                  ? "bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              {DASHBOARD_ITEM.icon}
+              {DASHBOARD_ITEM.label}
+            </button>
+          </div>
+
+          {renderSideItems("bride", "Pengantin Wanita")}
+          {renderSideItems("groom", "Pengantin Pria")}
         </nav>
 
         {/* Logout */}
@@ -149,5 +183,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
       </div>
     </div>
+  );
+}
+
+export function AdminShell({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen bg-slate-50 items-center justify-center">Memuat...</div>}>
+      <AdminShellContent>{children}</AdminShellContent>
+    </Suspense>
   );
 }

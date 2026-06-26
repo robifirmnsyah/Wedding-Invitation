@@ -3,12 +3,24 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/admin/categories — list all categories */
-export async function GET() {
-  const { data, error } = await supabaseAdmin
-    .from("guest_categories")
-    .select("*")
-    .order("name");
+type Side = "bride" | "groom";
+
+/** Normalize an arbitrary value into a valid side, defaulting to "groom". */
+function normalizeSide(value: unknown): Side {
+  return value === "bride" ? "bride" : "groom";
+}
+
+/** GET /api/admin/categories — list categories, optionally filtered by side */
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const side = searchParams.get("side");
+
+  let query = supabaseAdmin.from("guest_categories").select("*").order("name");
+  if (side === "bride" || side === "groom") {
+    query = query.eq("side", side);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json(
@@ -22,7 +34,7 @@ export async function GET() {
 
 /** POST /api/admin/categories — create a new category */
 export async function POST(req: Request) {
-  let body: { name?: string };
+  let body: { name?: string; side?: string };
   try {
     body = await req.json();
   } catch {
@@ -37,9 +49,11 @@ export async function POST(req: Request) {
     );
   }
 
+  const side = normalizeSide(body.side);
+
   const { data, error } = await supabaseAdmin
     .from("guest_categories")
-    .insert({ name })
+    .insert({ name, side })
     .select()
     .single();
 

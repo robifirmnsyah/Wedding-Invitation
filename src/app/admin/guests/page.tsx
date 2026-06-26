@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense, useRef } from "react";
 import { AdminShell } from "@/components/AdminShell";
+import { useSearchParams } from "next/navigation";
+import { toCsv } from "@/lib/csv";
 
 interface Category {
   id: string;
@@ -25,31 +27,26 @@ interface Guest {
 const CONTACT_TYPES = ["WhatsApp", "Email", "Instagram", "Telegram", "Lainnya"];
 
 const RSVP_BADGE: Record<string, { label: string; cls: string }> = {
-  hadir: {
-    label: "Hadir",
-    cls: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  },
-  tidak_hadir: {
-    label: "Tidak Hadir",
-    cls: "bg-rose-50 text-rose-700 ring-rose-200",
-  },
-  ragu: {
-    label: "Ragu",
-    cls: "bg-amber-50 text-amber-700 ring-amber-200",
-  },
-  pending: {
-    label: "Pending",
-    cls: "bg-slate-100 text-slate-600 ring-slate-200",
-  },
+  hadir: { label: "Hadir", cls: "bg-emerald-50 text-emerald-700 ring-emerald-200" },
+  tidak_hadir: { label: "Tidak Hadir", cls: "bg-rose-50 text-rose-700 ring-rose-200" },
+  ragu: { label: "Ragu", cls: "bg-amber-50 text-amber-700 ring-amber-200" },
+  pending: { label: "Pending", cls: "bg-slate-100 text-slate-600 ring-slate-200" },
 };
 
-export default function AdminGuestsPage() {
+function GuestsContent() {
+  const searchParams = useSearchParams();
+  const side = searchParams.get("side") === "bride" ? "bride" : "groom";
+  const sideLabel = side === "bride" ? "Pengantin Wanita" : "Pengantin Pria";
+
   const [guests, setGuests] = useState<Guest[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterRsvp, setFilterRsvp] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [bulkStatus, setBulkStatus] = useState<string | null>(null);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -63,14 +60,13 @@ export default function AdminGuestsPage() {
   });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
-
-  // Delete confirm
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchData = () => {
+    setLoading(true);
     Promise.all([
-      fetch("/api/admin/guests").then((r) => r.json()),
-      fetch("/api/admin/categories").then((r) => r.json()),
+      fetch(`/api/admin/guests?side=${side}`).then((r) => r.json()),
+      fetch(`/api/admin/categories?side=${side}`).then((r) => r.json()),
     ])
       .then(([gData, cData]) => {
         setGuests(gData.guests ?? []);
@@ -78,7 +74,11 @@ export default function AdminGuestsPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [side]);
 
   const filtered = useMemo(() => {
     return guests.filter((g) => {
@@ -99,13 +99,7 @@ export default function AdminGuestsPage() {
 
   const openAddModal = () => {
     setEditingGuest(null);
-    setFormData({
-      name: "",
-      category_id: "",
-      pax: 1,
-      contact_type: "WhatsApp",
-      contact: "",
-    });
+    setFormData({ name: "", category_id: "", pax: 1, contact_type: "WhatsApp", contact: "" });
     setFormError("");
     setShowModal(true);
   };
@@ -128,59 +122,47 @@ export default function AdminGuestsPage() {
       setFormError("Nama tamu wajib diisi.");
       return;
     }
+    if (!formData.category_id) {
+      setFormError("Kategori wajib diisi.");
+      return;
+    }
+    
     setSaving(true);
     setFormError("");
 
     try {
+      const payload = { ...formData, side };
       if (editingGuest) {
-        // Update
         const res = await fetch("/api/admin/guests", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editingGuest.id, ...formData }),
+          body: JSON.stringify({ id: editingGuest.id, ...payload }),
         });
-        if (!res.ok) {
-          const data = await res.json();
-          setFormError(data.error ?? "Gagal memperbarui.");
-          setSaving(false);
-          return;
-        }
+        if (!res.ok) throw new Error((await res.json()).error);
         const { guest } = await res.json();
         setGuests((prev) => prev.map((g) => (g.id === guest.id ? guest : g)));
       } else {
-        // Create
         const res = await fetch("/api/admin/guests", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         });
-        if (!res.ok) {
-          const data = await res.json();
-          setFormError(data.error ?? "Gagal menambahkan.");
-          setSaving(false);
-          return;
-        }
+        if (!res.ok) throw new Error((await res.json()).error);
         const { guest } = await res.json();
         setGuests((prev) => [guest, ...prev]);
       }
       setShowModal(false);
-    } catch {
-      setFormError("Terjadi kesalahan.");
+    } catch (e: any) {
+      setFormError(e.message || "Terjadi kesalahan.");
     }
     setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/guests?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setGuests((prev) => prev.filter((g) => g.id !== id));
-      }
-    } catch {
-      // silently fail
-    }
+      const res = await fetch(`/api/admin/guests?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (res.ok) setGuests((prev) => prev.filter((g) => g.id !== id));
+    } catch {}
     setDeletingId(null);
   };
 
@@ -190,26 +172,105 @@ export default function AdminGuestsPage() {
     navigator.clipboard?.writeText(link);
   };
 
+  const handleDownloadCsv = () => {
+    const header = ["unique_code", "name", "category", "pax", "contact_type", "contact"];
+    const rows = guests.map((g) => [
+      g.unique_code,
+      g.name,
+      g.guest_categories?.name || "",
+      g.pax.toString(),
+      g.contact_type,
+      g.contact
+    ]);
+    const csvContent = toCsv([header, ...rows]);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `tamu-${side}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleUploadCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setBulkStatus("Mengunggah...");
+    try {
+      const text = await file.text();
+      const res = await fetch("/api/admin/guests/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ side, csv: text }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Gagal mengunggah CSV");
+      } else {
+        const { created, updated, categoriesCreated, errors } = data.summary;
+        let msg = `Berhasil! Dibuat: ${created}, Diperbarui: ${updated}, Kategori Baru: ${categoriesCreated}.`;
+        if (errors.length > 0) {
+          msg += `\nTerdapat ${errors.length} error (lihat console).`;
+          console.warn("CSV Import Errors:", errors);
+        }
+        alert(msg);
+        fetchData();
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan saat memproses file.");
+    }
+    setBulkStatus(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   return (
     <AdminShell>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Tamu Undangan</h1>
+            <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">
+              Tamu Undangan <span className="text-slate-400 font-normal">· {sideLabel}</span>
+            </h1>
             <p className="mt-1 text-sm text-slate-500">
               {guests.length} tamu terdaftar
             </p>
           </div>
-          <button
-            onClick={openAddModal}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-600 hover:to-emerald-700 sm:w-auto"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            Tambah Tamu
-          </button>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <button
+              onClick={handleDownloadCsv}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 sm:w-auto"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Download CSV
+            </button>
+            <div>
+              <input type="file" accept=".csv" ref={fileInputRef} className="hidden" onChange={handleUploadCsv} />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={!!bulkStatus}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:opacity-50 sm:w-auto"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                </svg>
+                {bulkStatus || "Upload CSV"}
+              </button>
+            </div>
+            <button
+              onClick={openAddModal}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-600 hover:to-emerald-700 sm:w-auto"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              Tambah Tamu
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -248,7 +309,7 @@ export default function AdminGuestsPage() {
           </select>
         </div>
 
-        {/* Table */}
+        {/* Table / List */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
@@ -257,7 +318,7 @@ export default function AdminGuestsPage() {
           <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm">
             {search || filterCategory || filterRsvp
               ? "Tidak ada tamu yang sesuai filter."
-              : "Belum ada tamu. Klik \"Tambah Tamu\" untuk memulai."}
+              : "Belum ada tamu. Klik \"Tambah Tamu\" atau \"Upload CSV\" untuk memulai."}
           </div>
         ) : (
           <>
@@ -266,10 +327,7 @@ export default function AdminGuestsPage() {
               {filtered.map((g) => {
                 const badge = RSVP_BADGE[g.rsvp_status] ?? RSVP_BADGE.pending;
                 return (
-                  <div
-                    key={g.id}
-                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-                  >
+                  <div key={g.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="truncate font-semibold text-slate-900">{g.name}</p>
@@ -277,9 +335,7 @@ export default function AdminGuestsPage() {
                           {g.unique_code}
                         </code>
                       </div>
-                      <span
-                        className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${badge.cls}`}
-                      >
+                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${badge.cls}`}>
                         {badge.label}
                       </span>
                     </div>
@@ -300,48 +356,23 @@ export default function AdminGuestsPage() {
                     </dl>
 
                     <div className="mt-3 flex items-center justify-end gap-1 border-t border-slate-100 pt-3">
-                      {/* Copy link */}
-                      <button
-                        onClick={() => copyInvitationLink(g)}
-                        title="Salin Link Undangan"
-                        className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                      >
+                      <button onClick={() => copyInvitationLink(g)} title="Salin Link" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.86-5.236a4.5 4.5 0 0 0-1.242-7.244l-4.5-4.5a4.5 4.5 0 1 0-6.364 6.364l1.757 1.757" />
                         </svg>
                       </button>
-                      {/* Edit */}
-                      <button
-                        onClick={() => openEditModal(g)}
-                        title="Edit Tamu"
-                        className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                      >
+                      <button onClick={() => openEditModal(g)} title="Edit Tamu" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                         </svg>
                       </button>
-                      {/* Delete */}
                       {deletingId === g.id ? (
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleDelete(g.id)}
-                            className="rounded-lg bg-red-100 px-2.5 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-200"
-                          >
-                            Hapus
-                          </button>
-                          <button
-                            onClick={() => setDeletingId(null)}
-                            className="rounded-lg px-2.5 py-1.5 text-xs text-slate-500 transition-colors hover:text-slate-700"
-                          >
-                            Batal
-                          </button>
+                          <button onClick={() => handleDelete(g.id)} className="rounded-lg bg-red-100 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-200">Hapus</button>
+                          <button onClick={() => setDeletingId(null)} className="rounded-lg px-2.5 py-1.5 text-xs text-slate-500 hover:text-slate-700">Batal</button>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => setDeletingId(g.id)}
-                          title="Hapus Tamu"
-                          className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                        >
+                        <button onClick={() => setDeletingId(g.id)} title="Hapus" className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600">
                           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                           </svg>
@@ -358,110 +389,54 @@ export default function AdminGuestsPage() {
               <table className="w-full min-w-[800px] text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50">
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Kode
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Nama
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Kategori
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Jumlah
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Kontak
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Aksi
-                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Kode</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Nama</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Kategori</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Kontak</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filtered.map((g) => {
                     const badge = RSVP_BADGE[g.rsvp_status] ?? RSVP_BADGE.pending;
                     return (
-                      <tr
-                        key={g.id}
-                        className="transition-colors hover:bg-slate-50"
-                      >
+                      <tr key={g.id} className="transition-colors hover:bg-slate-50">
                         <td className="px-4 py-3">
-                          <code className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">
-                            {g.unique_code}
-                          </code>
+                          <code className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">{g.unique_code}</code>
                         </td>
-                        <td className="px-4 py-3 font-medium text-slate-900">
-                          {g.name}
-                        </td>
-                        <td className="px-4 py-3 text-slate-500">
-                          {g.guest_categories?.name ?? "—"}
-                        </td>
-                        <td className="px-4 py-3 text-center text-slate-700">
-                          {g.pax}
-                        </td>
+                        <td className="px-4 py-3 font-medium text-slate-900">{g.name}</td>
+                        <td className="px-4 py-3 text-slate-500">{g.guest_categories?.name ?? "—"}</td>
+                        <td className="px-4 py-3 text-center text-slate-700">{g.pax}</td>
                         <td className="px-4 py-3">
                           <div className="text-slate-500">
-                            <span className="text-xs text-slate-400">
-                              {g.contact_type}:{" "}
-                            </span>
+                            <span className="text-xs text-slate-400">{g.contact_type}: </span>
                             <span className="text-slate-700">{g.contact || "—"}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span
-                            className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${badge.cls}`}
-                          >
-                            {badge.label}
-                          </span>
+                          <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${badge.cls}`}>{badge.label}</span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1">
-                            {/* Copy link */}
-                            <button
-                              onClick={() => copyInvitationLink(g)}
-                              title="Salin Link Undangan"
-                              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                            >
+                            <button onClick={() => copyInvitationLink(g)} title="Salin" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
                               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.86-5.236a4.5 4.5 0 0 0-1.242-7.244l-4.5-4.5a4.5 4.5 0 1 0-6.364 6.364l1.757 1.757" />
                               </svg>
                             </button>
-                            {/* Edit */}
-                            <button
-                              onClick={() => openEditModal(g)}
-                              title="Edit Tamu"
-                              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                            >
+                            <button onClick={() => openEditModal(g)} title="Edit" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
                               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                               </svg>
                             </button>
-                            {/* Delete */}
                             {deletingId === g.id ? (
                               <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => handleDelete(g.id)}
-                                  className="rounded-lg bg-red-100 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-200"
-                                >
-                                  Hapus
-                                </button>
-                                <button
-                                  onClick={() => setDeletingId(null)}
-                                  className="rounded-lg px-2 py-1 text-xs text-slate-500 transition-colors hover:text-slate-700"
-                                >
-                                  Batal
-                                </button>
+                                <button onClick={() => handleDelete(g.id)} className="rounded-lg bg-red-100 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-200">Hapus</button>
+                                <button onClick={() => setDeletingId(null)} className="rounded-lg px-2 py-1 text-xs text-slate-500 hover:text-slate-700">Batal</button>
                               </div>
                             ) : (
-                              <button
-                                onClick={() => setDeletingId(g.id)}
-                                title="Hapus Tamu"
-                                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                              >
+                              <button onClick={() => setDeletingId(g.id)} title="Hapus" className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600">
                                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                                 </svg>
@@ -488,145 +463,73 @@ export default function AdminGuestsPage() {
             </h2>
 
             <div className="mt-6 space-y-4">
-              {/* Name */}
               <div>
-                <label
-                  htmlFor="guest-name"
-                  className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500"
-                >
-                  Nama Tamu *
-                </label>
+                <label htmlFor="guest-name" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500">Nama Tamu *</label>
                 <input
-                  id="guest-name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  maxLength={100}
-                  placeholder="Nama lengkap tamu"
+                  id="guest-name" type="text" value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  maxLength={100} placeholder="Nama lengkap tamu"
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
-              {/* Category */}
               <div>
-                <label
-                  htmlFor="guest-category"
-                  className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500"
-                >
-                  Kategori
-                </label>
+                <label htmlFor="guest-category" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500">Kategori *</label>
                 <select
-                  id="guest-category"
-                  value={formData.category_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category_id: e.target.value })
-                  }
+                  id="guest-category" value={formData.category_id}
+                  onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 >
                   <option value="">Pilih Kategori</option>
                   {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
+                    <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Pax */}
               <div>
-                <label
-                  htmlFor="guest-pax"
-                  className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500"
-                >
-                  Jumlah (Pax)
-                </label>
+                <label htmlFor="guest-pax" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah (Pax)</label>
                 <input
-                  id="guest-pax"
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={formData.pax}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      pax: parseInt(e.target.value) || 1,
-                    })
-                  }
+                  id="guest-pax" type="number" min={1} max={20} value={formData.pax}
+                  onChange={(e) => setFormData({ ...formData, pax: parseInt(e.target.value) || 1 })}
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
-              {/* Contact type & Contact */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label
-                    htmlFor="guest-contact-type"
-                    className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500"
-                  >
-                    Tipe Kontak
-                  </label>
+                  <label htmlFor="guest-contact-type" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500">Tipe Kontak</label>
                   <select
-                    id="guest-contact-type"
-                    value={formData.contact_type}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contact_type: e.target.value,
-                      })
-                    }
+                    id="guest-contact-type" value={formData.contact_type}
+                    onChange={(e) => setFormData({ ...formData, contact_type: e.target.value })}
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   >
-                    {CONTACT_TYPES.map((ct) => (
-                      <option key={ct} value={ct}>
-                        {ct}
-                      </option>
-                    ))}
+                    {CONTACT_TYPES.map((ct) => <option key={ct} value={ct}>{ct}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label
-                    htmlFor="guest-contact"
-                    className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500"
-                  >
-                    Kontak
-                  </label>
+                  <label htmlFor="guest-contact" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500">Kontak</label>
                   <input
-                    id="guest-contact"
-                    type="text"
-                    value={formData.contact}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contact: e.target.value })
-                    }
-                    maxLength={100}
-                    placeholder="No. WA / Email / dll"
+                    id="guest-contact" type="text" value={formData.contact}
+                    onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                    maxLength={100} placeholder="No. WA / Email / dll"
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
               </div>
 
-              {/* Unique code display (edit mode) */}
               {editingGuest && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500 uppercase tracking-wider">
-                    Kode Unik
-                  </p>
-                  <p className="mt-1 font-mono text-lg font-bold text-emerald-600">
-                    {editingGuest.unique_code}
-                  </p>
+                  <p className="text-xs text-slate-500 uppercase tracking-wider">Kode Unik</p>
+                  <p className="mt-1 font-mono text-lg font-bold text-emerald-600">{editingGuest.unique_code}</p>
                 </div>
               )}
 
-              {/* Error */}
               {formError && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                  {formError}
-                </div>
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{formError}</div>
               )}
             </div>
 
-            {/* Actions */}
             <div className="mt-6 flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowModal(false)}
@@ -635,20 +538,23 @@ export default function AdminGuestsPage() {
                 Batal
               </button>
               <button
-                onClick={handleSave}
-                disabled={saving}
+                onClick={handleSave} disabled={saving}
                 className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50"
               >
-                {saving
-                  ? "Menyimpan..."
-                  : editingGuest
-                    ? "Simpan Perubahan"
-                    : "Tambah Tamu"}
+                {saving ? "Menyimpan..." : editingGuest ? "Simpan Perubahan" : "Tambah Tamu"}
               </button>
             </div>
           </div>
         </div>
       )}
     </AdminShell>
+  );
+}
+
+export default function AdminGuestsPage() {
+  return (
+    <Suspense fallback={<div className="flex py-20 items-center justify-center">Memuat...</div>}>
+      <GuestsContent />
+    </Suspense>
   );
 }
