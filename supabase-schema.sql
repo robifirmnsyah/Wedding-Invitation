@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS guest_categories (
   name        TEXT NOT NULL,
   side        TEXT NOT NULL DEFAULT 'groom'
               CHECK (side IN ('bride', 'groom')),
+  color       TEXT NOT NULL DEFAULT 'slate',
   created_at  TIMESTAMPTZ DEFAULT now(),
   -- Nama kategori unik per-sisi, jadi "Teman Kantor" boleh ada di bride & groom.
   UNIQUE (name, side)

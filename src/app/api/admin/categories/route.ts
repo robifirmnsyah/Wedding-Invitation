@@ -34,7 +34,7 @@ export async function GET(req: Request) {
 
 /** POST /api/admin/categories — create a new category */
 export async function POST(req: Request) {
-  let body: { name?: string; side?: string };
+  let body: { name?: string; side?: string; color?: string };
   try {
     body = await req.json();
   } catch {
@@ -50,10 +50,11 @@ export async function POST(req: Request) {
   }
 
   const side = normalizeSide(body.side);
+  const color = (body.color ?? "slate").trim().slice(0, 50);
 
   const { data, error } = await supabaseAdmin
     .from("guest_categories")
-    .insert({ name, side })
+    .insert({ name, side, color })
     .select()
     .single();
 

@@ -4,10 +4,12 @@ import { useEffect, useState, useMemo, Suspense, useRef } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { useSearchParams } from "next/navigation";
 import { toCsv } from "@/lib/csv";
+import { getCategoryColor } from "@/lib/colors";
 
 interface Category {
   id: string;
   name: string;
+  color: string;
 }
 
 interface Guest {
@@ -341,10 +343,20 @@ function GuestsContent() {
                     </div>
 
                     <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <dt className="text-xs text-slate-400">Kategori</dt>
-                        <dd className="text-slate-700">{g.guest_categories?.name ?? "—"}</dd>
-                      </div>
+                       <div>
+                         <dt className="text-xs text-slate-400">Kategori</dt>
+                         <dd className="mt-0.5">
+                           {g.guest_categories ? (() => {
+                             const catMatch = categories.find(c => c.name === g.guest_categories!.name);
+                             const colorInfo = getCategoryColor(catMatch?.color ?? "slate");
+                             return (
+                               <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${colorInfo.bg} ${colorInfo.text}`}>
+                                 {g.guest_categories.name}
+                               </span>
+                             );
+                           })() : <span className="text-slate-400">—</span>}
+                         </dd>
+                       </div>
                       <div>
                         <dt className="text-xs text-slate-400">Jumlah</dt>
                         <dd className="text-slate-700">{g.pax}</dd>
@@ -407,7 +419,17 @@ function GuestsContent() {
                           <code className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">{g.unique_code}</code>
                         </td>
                         <td className="px-4 py-3 font-medium text-slate-900">{g.name}</td>
-                        <td className="px-4 py-3 text-slate-500">{g.guest_categories?.name ?? "—"}</td>
+                         <td className="px-4 py-3">
+                           {g.guest_categories ? (() => {
+                             const catMatch = categories.find(c => c.name === g.guest_categories!.name);
+                             const colorInfo = getCategoryColor(catMatch?.color ?? "slate");
+                             return (
+                               <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${colorInfo.bg} ${colorInfo.text}`}>
+                                 {g.guest_categories.name}
+                               </span>
+                             );
+                           })() : <span className="text-slate-400">—</span>}
+                         </td>
                         <td className="px-4 py-3 text-center text-slate-700">{g.pax}</td>
                         <td className="px-4 py-3">
                           <div className="text-slate-500">

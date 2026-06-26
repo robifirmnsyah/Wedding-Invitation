@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { parseCsv } from "@/lib/csv";
 import { generateFreshGuestCode, normalizeSide } from "@/lib/guests";
+import { CATEGORY_COLORS } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
 
@@ -89,9 +90,11 @@ export async function POST(req: Request) {
     // Auto-create category if needed
     let category_id = categories.get(categoryName.toLowerCase());
     if (!category_id) {
+      const randomColor = CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)].id;
+
       const { data: newCat, error: catErr } = await supabaseAdmin
         .from("guest_categories")
-        .insert({ name: categoryName, side })
+        .insert({ name: categoryName, side, color: randomColor })
         .select("id")
         .single();
       
