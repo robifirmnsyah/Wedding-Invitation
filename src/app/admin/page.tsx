@@ -119,25 +119,36 @@ export default function AdminDashboardPage() {
           <>
             {/* Stats cards */}
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
-              {STAT_CARDS.map((card) => (
-                <div
-                  key={card.key}
-                  className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md sm:p-5`}
-                >
+              {STAT_CARDS.map((card) => {
+                // "Total" counts every person (sum of all pax), not just the
+                // number of invitations.
+                const value =
+                  card.key === "total" ? stats.total_pax : stats[card.key];
+                return (
                   <div
-                    className={`absolute -right-4 -top-4 h-20 w-20 rounded-full bg-gradient-to-br ${card.gradient} opacity-10 blur-2xl transition-opacity group-hover:opacity-20`}
-                  />
-                  <div className={`mb-3 inline-flex rounded-xl bg-gradient-to-br ${card.gradient} p-2.5 text-white shadow-lg ${card.shadow}`}>
-                    {card.icon}
+                    key={card.key}
+                    className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md sm:p-5`}
+                  >
+                    <div
+                      className={`absolute -right-4 -top-4 h-20 w-20 rounded-full bg-gradient-to-br ${card.gradient} opacity-10 blur-2xl transition-opacity group-hover:opacity-20`}
+                    />
+                    <div className={`mb-3 inline-flex rounded-xl bg-gradient-to-br ${card.gradient} p-2.5 text-white shadow-lg ${card.shadow}`}>
+                      {card.icon}
+                    </div>
+                    <p className="text-2xl font-bold text-slate-900 sm:text-3xl">
+                      {value}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500 uppercase tracking-wider">
+                      {card.label}
+                    </p>
+                    {card.key === "total" && (
+                      <p className="mt-0.5 text-[11px] text-slate-400">
+                        {stats.total} undangan
+                      </p>
+                    )}
                   </div>
-                  <p className="text-2xl font-bold text-slate-900 sm:text-3xl">
-                    {stats[card.key]}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500 uppercase tracking-wider">
-                    {card.label}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Per-side totals: Pengantin Pria vs Pengantin Wanita */}

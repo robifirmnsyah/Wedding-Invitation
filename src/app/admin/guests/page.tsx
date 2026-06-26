@@ -28,6 +28,17 @@ interface Guest {
 
 const CONTACT_TYPES = ["WhatsApp", "Email", "Instagram", "Telegram", "Lainnya"];
 
+type SortKey = "name" | "unique_code" | "category" | "pax" | "rsvp_status" | "created_at";
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "created_at", label: "Terbaru" },
+  { key: "name", label: "Nama" },
+  { key: "unique_code", label: "Kode" },
+  { key: "category", label: "Kategori" },
+  { key: "pax", label: "Jumlah" },
+  { key: "rsvp_status", label: "Status" },
+];
+
 const RSVP_BADGE: Record<string, { label: string; cls: string }> = {
   hadir: { label: "Hadir", cls: "bg-emerald-50 text-emerald-700 ring-emerald-200" },
   tidak_hadir: { label: "Tidak Hadir", cls: "bg-rose-50 text-rose-700 ring-rose-200" },
@@ -46,6 +57,8 @@ function GuestsContent() {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterRsvp, setFilterRsvp] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("created_at");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [bulkStatus, setBulkStatus] = useState<string | null>(null);
@@ -98,6 +111,43 @@ function GuestsContent() {
       return true;
     });
   }, [guests, search, filterCategory, filterRsvp]);
+
+  const sorted = useMemo(() => {
+    const dir = sortDir === "asc" ? 1 : -1;
+    const valueOf = (g: Guest): string | number => {
+      switch (sortKey) {
+        case "name":
+          return g.name.toLowerCase();
+        case "unique_code":
+          return g.unique_code.toLowerCase();
+        case "category":
+          return (g.guest_categories?.name ?? "").toLowerCase();
+        case "pax":
+          return g.pax;
+        case "rsvp_status":
+          return g.rsvp_status;
+        case "created_at":
+        default:
+          return g.created_at;
+      }
+    };
+    return [...filtered].sort((a, b) => {
+      const va = valueOf(a);
+      const vb = valueOf(b);
+      if (va < vb) return -1 * dir;
+      if (va > vb) return 1 * dir;
+      return 0;
+    });
+  }, [filtered, sortKey, sortDir]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "created_at" || key === "pax" ? "desc" : "asc");
+    }
+  };
 
   const openAddModal = () => {
     setEditingGuest(null);
@@ -309,6 +359,33 @@ function GuestsContent() {
             <option value="tidak_hadir">Tidak Hadir</option>
             <option value="ragu">Ragu</option>
           </select>
+          <div className="flex gap-2">
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.key} value={o.key}>
+                  Urutkan: {o.label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+              title={sortDir === "asc" ? "Naik (A-Z)" : "Turun (Z-A)"}
+              className="shrink-0 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-600 transition-colors hover:bg-slate-50"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                {sortDir === "asc" ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h13.5m-13.5 6H12m-8.25 6h5.25m4.5 0 3-3m0 0 3 3m-3-3v9" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h13.5m-13.5 6H12m-8.25 6h5.25m4.5-9 3 3m0 0 3-3m-3 3v-9" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Table / List */}
@@ -316,7 +393,7 @@ function GuestsContent() {
           <div className="flex items-center justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : sorted.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm">
             {search || filterCategory || filterRsvp
               ? "Tidak ada tamu yang sesuai filter."
@@ -326,7 +403,7 @@ function GuestsContent() {
           <>
             {/* Mobile card list */}
             <div className="space-y-3 lg:hidden">
-              {filtered.map((g) => {
+              {sorted.map((g) => {
                 const badge = RSVP_BADGE[g.rsvp_status] ?? RSVP_BADGE.pending;
                 return (
                   <div key={g.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -401,17 +478,17 @@ function GuestsContent() {
               <table className="w-full min-w-[800px] text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50">
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Kode</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Nama</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Kategori</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah</th>
+                    <SortableTh label="Kode" sortKey="unique_code" activeKey={sortKey} dir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="Nama" sortKey="name" activeKey={sortKey} dir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="Kategori" sortKey="category" activeKey={sortKey} dir={sortDir} onSort={toggleSort} />
+                    <SortableTh label="Jumlah" sortKey="pax" activeKey={sortKey} dir={sortDir} onSort={toggleSort} align="center" />
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Kontak</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                    <SortableTh label="Status" sortKey="rsvp_status" activeKey={sortKey} dir={sortDir} onSort={toggleSort} align="center" />
                     <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filtered.map((g) => {
+                  {sorted.map((g) => {
                     const badge = RSVP_BADGE[g.rsvp_status] ?? RSVP_BADGE.pending;
                     return (
                       <tr key={g.id} className="transition-colors hover:bg-slate-50">
@@ -570,6 +647,52 @@ function GuestsContent() {
         </div>
       )}
     </AdminShell>
+  );
+}
+
+function SortableTh({
+  label,
+  sortKey,
+  activeKey,
+  dir,
+  onSort,
+  align = "left",
+}: {
+  label: string;
+  sortKey: SortKey;
+  activeKey: SortKey;
+  dir: "asc" | "desc";
+  onSort: (key: SortKey) => void;
+  align?: "left" | "center" | "right";
+}) {
+  const active = activeKey === sortKey;
+  const alignCls =
+    align === "center" ? "justify-center" : align === "right" ? "justify-end" : "justify-start";
+  return (
+    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className={`flex w-full items-center gap-1 ${alignCls} uppercase transition-colors hover:text-slate-800 ${
+          active ? "text-emerald-600" : ""
+        }`}
+      >
+        {label}
+        <svg
+          className={`h-3.5 w-3.5 transition-opacity ${active ? "opacity-100" : "opacity-30"}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+        >
+          {active && dir === "asc" ? (
+            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          )}
+        </svg>
+      </button>
+    </th>
   );
 }
 
