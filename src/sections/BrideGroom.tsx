@@ -22,7 +22,7 @@ function PersonCard({ person }: { person: Person }) {
             fill
             sizes="(max-width: 640px) 12rem, 14rem"
             className="object-cover"
-            style={{ objectPosition: "center 25%" }}
+            style={{ objectPosition: "center top" }}
           />
         </div>
       </div>
