@@ -5,29 +5,25 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   HiOutlinePaperAirplane,
   HiCheckBadge,
-  HiOutlineArrowUturnLeft,
+  HiCheckCircle,
+  HiXCircle,
+  HiQuestionMarkCircle
 } from "react-icons/hi2";
 import { SectionTitle } from "@/components/Decor";
-import { Reveal } from "@/components/Reveal";
+import { StaggerGroup, RevealItem } from "@/components/Reveal";
 import { useGuestInfo } from "@/hooks/useGuestName";
+import { motionTokens } from "@/animations/tokens";
+import {
+  slideFromLeft,
+  slideFromRight,
+  staggerContainer,
+} from "@/animations/variants";
 import { attendanceLabel, relativeTime } from "@/lib/utils";
 import type { Wish } from "@/lib/types";
 
 const PAGE_SIZE = 4;
 const ATTENDANCE: Wish["attendance"][] = ["hadir", "tidak_hadir", "ragu"];
 const GUEST_FALLBACK = "Tamu Undangan";
-
-const COUNTERS: {
-  key: Wish["attendance"];
-  label: string;
-  ring: string;
-  text: string;
-  bg: string;
-}[] = [
-  { key: "hadir", label: "Hadir", ring: "ring-emerald-500/30", text: "text-emerald-700", bg: "bg-emerald-50" },
-  { key: "tidak_hadir", label: "Tidak Hadir", ring: "ring-rose-500/30", text: "text-rose-700", bg: "bg-rose-50" },
-  { key: "ragu", label: "Masih Ragu", ring: "ring-amber-500/30", text: "text-amber-700", bg: "bg-amber-50" },
-];
 
 interface RegisteredGuest {
   id: string;
@@ -38,15 +34,22 @@ interface RegisteredGuest {
   wish_message: string;
 }
 
-/** Guestbook: RSVP counters + form + paginated wishes with replies. */
+const formState = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: {
+    duration: motionTokens.durationBase,
+    ease: motionTokens.easeOut,
+  },
+} as const;
+
 export function Wishes() {
   const guestInfo = useGuestInfo();
   const guestName = guestInfo.name;
   const guestCode = guestInfo.code;
   const isPersonalised = guestName !== GUEST_FALLBACK;
-  const hasInvitationCode = !!guestCode;
 
-  // Registered guest data from Supabase
   const [registeredGuest, setRegisteredGuest] = useState<RegisteredGuest | null>(null);
   const [guestLookupDone, setGuestLookupDone] = useState(false);
 
@@ -54,18 +57,10 @@ export function Wishes() {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [attendance, setAttendance] = useState<Wish["attendance"]>("hadir");
-  const [visible, setVisible] = useState(PAGE_SIZE);
+  const [pax, setPax] = useState<number>(1);
+  const [page, setPage] = useState(1);
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 
-  // reply thread state (one open form at a time)
-  const [replyTo, setReplyTo] = useState<string | null>(null);
-  const [replyName, setReplyName] = useState("");
-  const [replyMessage, setReplyMessage] = useState("");
-  const [replyStatus, setReplyStatus] = useState<"idle" | "sending" | "error">(
-    "idle"
-  );
-
-  // Look up registered guest by unique code
   useEffect(() => {
     if (!guestCode) {
       setGuestLookupDone(true);
@@ -77,9 +72,11 @@ export function Wishes() {
       .then((d) => {
         if (d.guest) {
           setRegisteredGuest(d.guest);
-          // Prefill form with existing data
           if (d.guest.rsvp_status && d.guest.rsvp_status !== "pending") {
             setAttendance(d.guest.rsvp_status as Wish["attendance"]);
+          }
+          if (d.guest.pax) {
+            setPax(d.guest.pax);
           }
           if (d.guest.wish_message) {
             setMessage(d.guest.wish_message);
@@ -95,362 +92,382 @@ export function Wishes() {
   useEffect(() => {
     fetch("/api/wishes")
       .then((r) => r.json())
-      .then((d) => setWishes(d.wishes ?? []))
+      .then((d) => {
+        const list: Wish[] = d.wishes ?? [];
+        list.sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return timeB - timeA;
+        });
+        setWishes(list);
+      })
       .catch(() => {});
   }, []);
 
-  // prefill the name with the invited guest's name once it resolves
   useEffect(() => {
     if (registeredGuest) {
       setName(registeredGuest.name);
-      setReplyName(registeredGuest.name);
     } else if (isPersonalised) {
       setName((cur) => (cur ? cur : guestName));
-      setReplyName((cur) => (cur ? cur : guestName));
     }
   }, [guestName, isPersonalised, registeredGuest]);
-
-  const counts = useMemo(() => {
-    const c = { hadir: 0, tidak_hadir: 0, ragu: 0 } as Record<
-      Wish["attendance"],
-      number
-    >;
-    for (const w of wishes) c[w.attendance] = (c[w.attendance] ?? 0) + 1;
-    return c;
-  }, [wishes]);
 
   const submitRsvp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!hasInvitationCode || !registeredGuest) return;
-    if (!message.trim()) return;
+    const senderName = (registeredGuest ? registeredGuest.name : name).trim();
+    if (!senderName || !message.trim()) return;
 
     setStatus("sending");
 
     try {
-      // Submit RSVP to Supabase via the RSVP API
-      const rsvpRes = await fetch("/api/rsvp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: guestCode,
-          rsvp_status: attendance,
-          wish_message: message.trim(),
-        }),
-      });
+      if (guestCode && registeredGuest) {
+        try {
+          await fetch("/api/rsvp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code: guestCode,
+              rsvp_status: attendance,
+              wish_message: message.trim(),
+            }),
+          });
+        } catch {}
+      }
 
-      if (!rsvpRes.ok) throw new Error();
+      const verified = Boolean(
+        registeredGuest ||
+        (isPersonalised && senderName.toLowerCase() === guestName.trim().toLowerCase())
+      );
 
-      // Also add to the wishes guestbook (file-based) for display
       const wishRes = await fetch("/api/wishes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: registeredGuest.name,
+          name: senderName,
           message: message.trim(),
           attendance,
-          verified: true,
+          verified,
         }),
       });
 
-      if (wishRes.ok) {
-        const { wish } = await wishRes.json();
-        setWishes((prev) => [wish, ...prev]);
-      }
+      if (!wishRes.ok) throw new Error();
 
+      const { wish } = await wishRes.json();
+      setWishes((prev) => [wish, ...prev]);
       setStatus("success");
+      setPage(1); // reset to first page to see new wish
     } catch {
       setStatus("error");
     }
   };
 
-  const submitReply = async (wishId: string) => {
-    if (!replyName.trim() || !replyMessage.trim()) return;
-    setReplyStatus("sending");
-    try {
-      const res = await fetch("/api/wishes/reply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wishId, name: replyName, message: replyMessage }),
-      });
-      if (!res.ok) throw new Error();
-      const { reply } = await res.json();
-      setWishes((prev) =>
-        prev.map((w) =>
-          w.id === wishId
-            ? { ...w, replies: [...(w.replies ?? []), reply] }
-            : w
-        )
-      );
-      setReplyMessage("");
-      setReplyTo(null);
-      setReplyStatus("idle");
-    } catch {
-      setReplyStatus("error");
-    }
+  const totalPages = Math.ceil(wishes.length / PAGE_SIZE);
+  const paginatedWishes = wishes.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const getAttendanceIcon = (status: string) => {
+    if (status === "hadir") return <HiCheckCircle className="text-emerald-500 text-xl" title="Hadir" />;
+    if (status === "tidak_hadir") return <HiXCircle className="text-rose-500 text-xl" title="Tidak Hadir" />;
+    return <HiQuestionMarkCircle className="text-amber-500 text-xl" title="Masih Ragu" />;
   };
 
   return (
-    <section className="section-pad relative overflow-hidden bg-cream/60 backdrop-blur-sm">
-      <SectionTitle eyebrow="Send Your Love" title="Wedding Wishes" />
+    <section
+      aria-labelledby="wishes-title"
+      className="section-pad relative overflow-hidden "
+    >
+      <div className="relative z-[1]">
+        <SectionTitle id="wishes-title" eyebrow="Send Your Love" title="Wedding Wishes" />
 
-      <div className="mx-auto mt-10 grid max-w-4xl gap-8 lg:grid-cols-2">
-        {/* form */}
-        <Reveal className="paper-card rounded-2xl p-6 shadow-md ring-1 ring-olive/10">
-          {!guestLookupDone ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-olive border-t-transparent" />
-            </div>
-          ) : !hasInvitationCode ? (
-            /* No invitation code — show a message */
-            <div className="py-8 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-sage/40">
-                <svg className="h-7 w-7 text-olive" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                </svg>
-              </div>
-              <p className="font-heading text-lg font-600 text-olive-dark">
-                RSVP Khusus Tamu Terdaftar
-              </p>
-              <p className="mt-2 font-body text-sm text-ink/60">
-                Untuk mengisi RSVP dan memberikan ucapan, silakan buka undangan melalui link khusus yang telah dikirimkan kepada Anda.
-              </p>
-            </div>
-          ) : !registeredGuest ? (
-            /* Invalid code */
-            <div className="py-8 text-center">
-              <p className="font-heading text-lg font-600 text-rose-600">
-                Kode Undangan Tidak Valid
-              </p>
-              <p className="mt-2 font-body text-sm text-ink/60">
-                Kode undangan yang Anda gunakan tidak ditemukan. Pastikan Anda membuka link yang benar.
-              </p>
-            </div>
-          ) : status === "success" ? (
-            /* Success message */
-            <div className="py-8 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 ring-2 ring-emerald-500/30">
-                <svg className="h-7 w-7 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+      <StaggerGroup
+        variants={staggerContainer}
+        early
+        className="mx-auto mt-12 flex max-w-lg flex-col gap-8"
+      >
+        <RevealItem variants={slideFromLeft} className="paper-card h-fit p-5 sm:p-6">
+          <AnimatePresence mode="wait" initial={false}>
+          {status === "success" ? (
+            <motion.div key="success" {...formState} className="py-8 text-center" role="status">
+              <motion.div
+                className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-olive-600 "
+                initial={{ scale: 0.7, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ ...motionTokens.spring, delay: 0.1 }}
+              >
+                <svg
+                  aria-hidden="true"
+                  className="h-7 w-7 text-olive-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-              </div>
-              <p className="font-heading text-lg font-600 text-olive-dark">
-                Terima Kasih, {registeredGuest.name}!
+              </motion.div>
+              <p
+                className="font-display font-semibold text-olive-900"
+                style={{ fontSize: "var(--text-h3)" }}
+              >
+                Terima Kasih, {registeredGuest?.name || name || "Tamu Undangan"}!
               </p>
-              <p className="mt-2 font-body text-sm text-ink/60">
+              <p className="mt-3 font-body text-sm leading-relaxed text-olive-700">
                 RSVP dan ucapan Anda telah tersimpan. Kami sangat menantikan kehadiran Anda.
               </p>
-            </div>
+            </motion.div>
           ) : (
-            /* RSVP Form for registered guests */
-            <form onSubmit={submitRsvp} className="space-y-4">
-              <div className="rounded-xl bg-sage/30 p-3">
-                <div className="flex items-center gap-2">
-                  <HiCheckBadge className="text-lg text-olive" />
-                  <span className="font-heading text-sm font-600 text-olive-dark">
-                    {registeredGuest.name}
-                  </span>
+            <motion.form key="form" {...formState} onSubmit={submitRsvp} className="space-y-4">
+              {registeredGuest ? (
+                <div className="border border-sage-300  p-3">
+                  <div className="flex items-center gap-2">
+                    <HiCheckBadge
+                      aria-hidden="true"
+                      className="text-lg text-olive-600"
+                    />
+                    <span className="font-body text-sm font-medium text-olive-900">
+                      {registeredGuest.name}
+                    </span>
+                  </div>
+                  <p className="mt-1 font-body text-xs text-olive-700">
+                    Kode: {registeredGuest.unique_code} · Kuota: {registeredGuest.pax} orang
+                  </p>
                 </div>
-                <p className="mt-1 font-body text-xs text-ink/50">
-                  Kode: {registeredGuest.unique_code} · Kuota: {registeredGuest.pax} orang
-                </p>
-              </div>
+              ) : (
+                <div>
+                  <label
+                    htmlFor="guest-name"
+                    className="font-body text-xs font-medium text-olive-700"
+                  >
+                    Nama Anda
+                  </label>
+                  <input
+                    id="guest-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={60}
+                    required
+                    placeholder="Nama Anda"
+                    className="mt-1.5 min-h-10 w-full rounded border border-sage-300  px-3 py-2 font-body text-sm text-olive-900 outline-none transition-colors duration-200 placeholder:text-sage-500 focus:border-olive-600"
+                  />
+                </div>
+              )}
 
-              <div>
-                <label className="font-body text-xs uppercase tracking-widest text-ink/60">
-                  Kehadiran
-                </label>
-                <div className="mt-1 grid grid-cols-3 gap-2">
-                  {ATTENDANCE.map((a) => (
+              {/* Kehadiran Dropdown & Plus/Minus Jumlah Tamu Counter */}
+              <div className="grid grid-cols-2 gap-3 items-end">
+                {/* Kehadiran Dropdown */}
+                <div>
+                  <label
+                    htmlFor="attendance-select"
+                    className="font-body text-xs font-medium text-olive-700 block mb-1.5"
+                  >
+                    Kehadiran
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="attendance-select"
+                      value={attendance}
+                      onChange={(e) => setAttendance(e.target.value as Wish["attendance"])}
+                      className="min-h-10 w-full rounded-lg border border-sage-300 bg-[#FFFFFF] px-3 py-2 font-body text-sm text-olive-900 outline-none transition-colors duration-200 focus:border-olive-600 focus:ring-1 focus:ring-olive-600 cursor-pointer appearance-none pr-8"
+                    >
+                      <option value="hadir">Hadir</option>
+                      <option value="tidak_hadir">Tidak Hadir</option>
+                      <option value="ragu">Masih Ragu</option>
+                    </select>
+                    {/* Custom chevron icon */}
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-olive-600">
+                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Konfirmasi Jumlah Orang (Plus / Minus Counter) */}
+                <div>
+                  <label
+                    className="font-body text-xs font-medium text-olive-700 block mb-1.5"
+                  >
+                    Jumlah Tamu
+                  </label>
+                  <div className="flex min-h-10 w-full items-center justify-between rounded-lg border border-sage-300 bg-[#FFFFFF] px-1.5">
                     <button
                       type="button"
-                      key={a}
-                      onClick={() => setAttendance(a)}
-                      className={`rounded-lg border px-2 py-2 text-xs transition-colors ${
-                        attendance === a
-                          ? "border-olive bg-olive text-ivory"
-                          : "border-olive/20 bg-ivory text-ink/70 hover:bg-sage/40"
-                      }`}
+                      onClick={() => setPax((p) => Math.max(1, p - 1))}
+                      disabled={attendance === "tidak_hadir" || pax <= 1}
+                      aria-label="Kurangi jumlah tamu"
+                      className="flex h-7 w-7 items-center justify-center rounded-md bg-sage-100/90 text-olive-900 font-bold text-base hover:bg-sage-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
                     >
-                      {attendanceLabel[a]}
+                      -
                     </button>
-                  ))}
+                    <span className="font-body text-xs sm:text-sm font-semibold text-olive-950 tabular-nums">
+                      {pax} Orang
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setPax((p) => Math.min(10, p + 1))}
+                      disabled={attendance === "tidak_hadir" || pax >= 10}
+                      aria-label="Tambah jumlah tamu"
+                      className="flex h-7 w-7 items-center justify-center rounded-md bg-sage-100/90 text-olive-900 font-bold text-base hover:bg-sage-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <div>
-                <label className="font-body text-xs uppercase tracking-widest text-ink/60">
+                <label
+                  htmlFor="wish-message"
+                  className="font-body text-xs font-medium text-olive-700"
+                >
                   Ucapan &amp; Doa
                 </label>
                 <textarea
+                  id="wish-message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   maxLength={500}
                   required
                   rows={3}
                   placeholder="Tulis ucapan dan doa terbaik Anda..."
-                  className="mt-1 w-full resize-none rounded-lg border border-olive/20 bg-ivory px-4 py-2.5 text-sm outline-none focus:border-olive focus:ring-1 focus:ring-olive/40"
+                  className="mt-1.5 w-full resize-none rounded border border-sage-300  px-3 py-2 font-body text-sm text-olive-900 outline-none transition-colors duration-200 placeholder:text-sage-500 focus:border-olive-600"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={status === "sending"}
-                className="btn-olive w-full disabled:opacity-60"
+                className="btn-olive w-full !py-2.5 !text-sm disabled:cursor-not-allowed disabled:opacity-45"
               >
-                <HiOutlinePaperAirplane />
-                {status === "sending" ? "Mengirim..." : "Kirim RSVP & Ucapan"}
+                <HiOutlinePaperAirplane aria-hidden="true" />
+                {status === "sending" ? "Mengirim..." : "Kirim"}
               </button>
-              {status === "error" && (
-                <p className="text-center text-xs text-red-500">
-                  Gagal mengirim. Silakan coba lagi.
-                </p>
-              )}
-            </form>
+              <AnimatePresence>
+                {status === "error" && (
+                  <motion.p
+                    role="alert"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: motionTokens.durationFast }}
+                    className="text-center font-body text-xs text-error"
+                  >
+                    Gagal mengirim. Silakan coba lagi.
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.form>
           )}
-        </Reveal>
+          </AnimatePresence>
+        </RevealItem>
 
-        {/* list */}
-        <div className="flex flex-col">
-          <p className="mb-3 font-body text-sm text-ink/60">
+        <RevealItem variants={slideFromLeft} className="flex flex-col">
+          <p className="mb-3 font-body text-sm text-olive-700" aria-live="polite">
             {wishes.length} ucapan
           </p>
-          <div className="no-scrollbar max-h-[28rem] space-y-3 overflow-y-auto pr-1">
+          <div className="space-y-3">
             {wishes.length === 0 && (
-              <p className="rounded-xl bg-ivory/70 p-4 text-center text-sm text-ink/50">
-                Jadilah yang pertama memberi ucapan 🤍
+              <p className="paper-card p-4 text-center font-body text-sm text-olive-700">
+                Jadilah yang pertama memberi ucapan
               </p>
             )}
-            {wishes.slice(0, visible).map((w) => (
-              <motion.div
+            <AnimatePresence initial={false}>
+            {paginatedWishes.map((w) => (
+              <motion.article
                 key={w.id}
-                initial={{ opacity: 0, y: 10 }}
+                layout
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl bg-ivory/80 p-4 shadow-sm ring-1 ring-olive/10"
+                exit={{ opacity: 0, y: -8 }}
+                transition={{
+                  duration: motionTokens.durationBase,
+                  ease: motionTokens.easeOut,
+                }}
+                className="paper-card p-3 sm:p-4"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="flex items-center gap-1.5 font-heading text-base font-600 text-olive-dark">
+                  <p className="flex items-center gap-1.5 font-body text-sm font-semibold text-olive-900">
                     {w.name}
                     {w.verified && (
                       <span
-                        className="inline-flex items-center gap-0.5 rounded-full bg-olive/10 px-1.5 py-0.5 text-[10px] font-medium text-olive"
+                        className="inline-flex items-center gap-0.5 rounded-full border border-sage-300  px-1 py-0.5 text-[10px] font-medium text-olive-700"
                         title="Tamu undangan"
                       >
-                        <HiCheckBadge className="text-sm text-olive" />
-                        Tamu
+                        <HiCheckBadge
+                          aria-hidden="true"
+                          className="text-xs text-olive-600"
+                        />
                       </span>
                     )}
                   </p>
-                  <span className="shrink-0 rounded-full bg-sage/60 px-2 py-0.5 text-[10px] uppercase tracking-wide text-olive-dark">
-                    {attendanceLabel[w.attendance]}
-                  </span>
+                  <span className="shrink-0">{getAttendanceIcon(w.attendance)}</span>
                 </div>
 
-                <p className="mt-1 font-body text-sm leading-relaxed text-ink/75">
+                <p className="mt-1.5 font-body text-sm leading-relaxed text-olive-700">
                   {w.message}
                 </p>
 
-                <div className="mt-2 flex items-center gap-3">
-                  <span className="font-body text-[11px] text-ink/40">
+                <div className="mt-2 text-right">
+                  <span className="font-body text-xs text-sage-500 italic">
                     {relativeTime(w.createdAt)}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setReplyTo((cur) => (cur === w.id ? null : w.id));
-                      setReplyStatus("idle");
-                    }}
-                    className="inline-flex items-center gap-1 font-body text-[11px] font-medium text-olive transition-colors hover:text-olive-dark"
-                  >
-                    <HiOutlineArrowUturnLeft className="text-xs" />
-                    Balas
-                  </button>
                 </div>
-
-                {/* replies */}
-                {w.replies && w.replies.length > 0 && (
-                  <ul className="mt-3 space-y-2 border-l-2 border-sage pl-3">
-                    {w.replies.map((r) => (
-                      <li key={r.id}>
-                        <div className="flex items-center gap-2">
-                          <p className="font-heading text-sm font-600 text-olive-dark">
-                            {r.name}
-                          </p>
-                          <span className="font-body text-[10px] text-ink/40">
-                            {relativeTime(r.createdAt)}
-                          </span>
-                        </div>
-                        <p className="font-body text-xs leading-relaxed text-ink/70">
-                          {r.message}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                {/* inline reply form */}
-                <AnimatePresence initial={false}>
-                  {replyTo === w.id && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="mt-3 space-y-2 rounded-lg bg-sage/20 p-3">
-                        <input
-                          value={replyName}
-                          onChange={(e) => setReplyName(e.target.value)}
-                          maxLength={60}
-                          placeholder="Nama Anda"
-                          className="w-full rounded-md border border-olive/20 bg-ivory px-3 py-1.5 text-xs outline-none focus:border-olive"
-                        />
-                        <textarea
-                          value={replyMessage}
-                          onChange={(e) => setReplyMessage(e.target.value)}
-                          maxLength={300}
-                          rows={2}
-                          placeholder={`Balas ${w.name}...`}
-                          className="w-full resize-none rounded-md border border-olive/20 bg-ivory px-3 py-1.5 text-xs outline-none focus:border-olive"
-                        />
-                        <div className="flex items-center justify-end gap-2">
-                          {replyStatus === "error" && (
-                            <span className="mr-auto text-[11px] text-red-500">
-                              Gagal mengirim.
-                            </span>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setReplyTo(null)}
-                            className="rounded-full px-3 py-1.5 text-xs text-ink/60 hover:text-ink"
-                          >
-                            Batal
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => submitReply(w.id)}
-                            disabled={replyStatus === "sending"}
-                            className="btn-olive !px-4 !py-1.5 !text-xs disabled:opacity-60"
-                          >
-                            {replyStatus === "sending" ? "..." : "Kirim"}
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+              </motion.article>
             ))}
+            </AnimatePresence>
           </div>
-          {visible < wishes.length && (
-            <button
-              onClick={() => setVisible((v) => v + PAGE_SIZE)}
-              className="btn-ghost mx-auto mt-4"
-            >
-              Lihat ucapan lainnya
-            </button>
+          
+          {totalPages > 1 && (
+            <div className="mt-5 flex items-center justify-center gap-1">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-2 py-1 font-body text-sm font-medium text-olive-700 transition-colors hover:text-olive-900 disabled:opacity-40 disabled:hover:text-olive-700"
+              >
+                Previous
+              </button>
+              
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const pageNum = i + 1;
+                // Simple logic to show current, first, last, and surrounding pages
+                if (
+                  pageNum === 1 || 
+                  pageNum === totalPages ||
+                  (pageNum >= page - 1 && pageNum <= page + 1)
+                ) {
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setPage(pageNum)}
+                      className={`flex h-8 w-8 items-center justify-center rounded-full font-body text-sm transition-colors ${
+                        page === pageNum
+                          ? 'bg-olive-600 text-ivory-50'
+                          : 'text-olive-700 hover:'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                } else if (
+                  pageNum === page - 2 || 
+                  pageNum === page + 2
+                ) {
+                  return <span key={i} className="px-1 text-olive-400">...</span>;
+                }
+                return null;
+              })}
+
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-2 py-1 font-body text-sm font-medium text-olive-700 transition-colors hover:text-olive-900 disabled:opacity-40 disabled:hover:text-olive-700"
+              >
+                Next
+              </button>
+            </div>
           )}
-        </div>
+        </RevealItem>
+      </StaggerGroup>
       </div>
     </section>
   );

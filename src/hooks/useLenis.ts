@@ -8,6 +8,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 /**
  * Initialise Lenis smooth scrolling and keep GSAP ScrollTrigger in sync.
  * `enabled` lets us pause scrolling while the invitation cover is closed.
+ * Under `prefers-reduced-motion`, Lenis is never instantiated — native
+ * scrolling is used instead (design-system/MASTER.md §16.4).
  */
 export function useLenis(enabled: boolean) {
   useEffect(() => {
@@ -15,9 +17,13 @@ export function useLenis(enabled: boolean) {
 
     gsap.registerPlugin(ScrollTrigger);
 
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
     const lenis = new Lenis({
       duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       touchMultiplier: 1.6,
     });

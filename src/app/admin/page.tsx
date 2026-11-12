@@ -332,7 +332,7 @@ export default function AdminDashboardPage() {
         ) : (
           <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
             <p className="text-slate-500">
-              Gagal memuat data. Pastikan Supabase sudah terkonfigurasi dengan benar.
+              Gagal memuat data. Pastikan Environment Variables Google Sheets sudah terkonfigurasi di Vercel.
             </p>
           </div>
         )}

@@ -53,10 +53,13 @@ export interface WeddingConfig {
   hero: {
     tagline: string;
     dateLabel: string;
+    /** couple portrait revealed inside the arch frame once the invitation opens */
+    photo: string;
   };
   quote: Quote;
   loveStory: StoryMilestone[];
   event: {
+    akad?: EventInfo;
     resepsi: EventInfo;
   };
   countdownTarget: string;

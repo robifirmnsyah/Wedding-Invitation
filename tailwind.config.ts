@@ -8,47 +8,59 @@ const config: Config = {
     extend: {
       colors: {
         olive: {
-          DEFAULT: "#708238",
-          light: "#8a9a52",
-          dark: "#566529",
+          DEFAULT: "#5A6642",
+          950: "#252A1F",
+          900: "#333B2B",
+          700: "#4A5438",
+          600: "#5A6642",
+          500: "#6E7A52",
+          // legacy aliases kept during migration
+          light: "#6E7A52",
+          dark: "#4A5438",
         },
-        ivory: "#FAF8F3",
-        cream: "#F5F0E6",
-        sage: "#DCE4D3",
-        beige: "#E9E1D3",
-        ink: "#3B3B3B",
+        sage: {
+          DEFAULT: "#B4BCA2",
+          500: "#8A9474",
+          300: "#B4BCA2",
+          100: "#DDE2D1",
+        },
+        ivory: {
+          DEFAULT: "#FBF9F3",
+          50: "#FBF9F3",
+          100: "#F6F2E8",
+        },
+        beige: {
+          DEFAULT: "#EAE0CE",
+          200: "#EAE0CE",
+          300: "#DCCFB6",
+        },
+        gold: {
+          DEFAULT: "#8C7443",
+          600: "#8C7443",
+          700: "#756034",
+        },
+        cream: "#F6F2E8", // legacy alias of ivory-100
+        ink: "#333B2B", // alias of olive-900
+        error: "#8C3A2E",
       },
       fontFamily: {
-        heading: ["var(--font-fredoka)", "sans-serif"],
-        sub: ["var(--font-cormorant)", "serif"],
-        body: ["var(--font-poppins)", "sans-serif"],
-        script: ["var(--font-caveat)", "cursive"],
+        display: ["var(--font-display)", "serif"],
+        body: ["var(--font-body)", "sans-serif"],
+        arabic: ["var(--font-arabic)", "serif"],
+        accent: ["var(--font-accent)", "cursive"],
+        // legacy aliases re-pointed during migration
+        heading: ["var(--font-display)", "serif"],
+        sub: ["var(--font-display)", "serif"],
+        script: ["var(--font-accent)", "cursive"],
       },
-      keyframes: {
-        floatUp: {
-          "0%": { transform: "translateY(0) rotate(0deg)", opacity: "0" },
-          "10%": { opacity: "0.9" },
-          "90%": { opacity: "0.7" },
-          "100%": { transform: "translateY(-110vh) rotate(360deg)", opacity: "0" },
-        },
-        sway: {
-          "0%, 100%": { transform: "translateX(0)" },
-          "50%": { transform: "translateX(18px)" },
-        },
-        pulseGlow: {
-          "0%, 100%": { opacity: "0.55", transform: "scale(1)" },
-          "50%": { opacity: "0.85", transform: "scale(1.06)" },
-        },
-        bloom: {
-          "0%": { transform: "scale(0.6) rotate(-8deg)", opacity: "0" },
-          "100%": { transform: "scale(1) rotate(0deg)", opacity: "1" },
-        },
+      boxShadow: {
+        paper:
+          "0 1px 2px rgb(37 42 31 / 0.06), 0 8px 24px rgb(37 42 31 / 0.08)",
+        lifted:
+          "0 2px 4px rgb(37 42 31 / 0.08), 0 16px 40px rgb(37 42 31 / 0.12)",
       },
-      animation: {
-        floatUp: "floatUp linear infinite",
-        sway: "sway 6s ease-in-out infinite",
-        pulseGlow: "pulseGlow 7s ease-in-out infinite",
-        bloom: "bloom 1.4s cubic-bezier(0.22,1,0.36,1) forwards",
+      borderRadius: {
+        arch: "999px 999px 0 0",
       },
     },
   },

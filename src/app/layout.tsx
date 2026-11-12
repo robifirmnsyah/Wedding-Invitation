@@ -1,55 +1,76 @@
 import type { Metadata, Viewport } from "next";
-import { Fredoka, Cormorant_Garamond, Poppins, Caveat } from "next/font/google";
-import config from "@/lib/config";
+import {
+  Amiri,
+  Cormorant_Garamond,
+  Great_Vibes,
+  Poppins,
+} from "next/font/google";
+import config, { isTasyakur } from "@/lib/config";
 import "./globals.css";
 
-const fredoka = Fredoka({
+const display = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-fredoka",
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-display",
   display: "swap",
 });
 
-const cormorant = Cormorant_Garamond({
+const body = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  variable: "--font-body",
   display: "swap",
 });
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  variable: "--font-poppins",
+const arabic = Amiri({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  variable: "--font-arabic",
   display: "swap",
 });
 
-const caveat = Caveat({
+const accent = Great_Vibes({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-caveat",
+  weight: ["400"],
+  variable: "--font-accent",
   display: "swap",
 });
 
 const groom = config.couple.groom.shortName;
 const bride = config.couple.bride.shortName;
+const person1 = isTasyakur ? groom : bride;
+const person2 = isTasyakur ? bride : groom;
+const fullName1 = isTasyakur ? config.couple.groom.name : config.couple.bride.name;
+const fullName2 = isTasyakur ? config.couple.bride.name : config.couple.groom.name;
 
 export const metadata: Metadata = {
-  title: `${groom} & ${bride} — Wedding Invitation`,
-  description: `Undangan pernikahan ${config.couple.groom.name} & ${config.couple.bride.name}`,
+  title: isTasyakur
+    ? `${person1} & ${person2} — Tasyakur Menjelang Pernikahan`
+    : `${person1} & ${person2} — Wedding Invitation`,
+  description: isTasyakur
+    ? `Tasyakur Menjelang Pernikahan ${fullName1} & ${fullName2}`
+    : `Undangan pernikahan ${fullName1} & ${fullName2}`,
+  icons: {
+    icon: "/assets/logo/favicon-olive.png",
+    apple: "/assets/logo/favicon-olive.png",
+  },
   openGraph: {
-    title: `${groom} & ${bride} — Wedding Invitation`,
-    description: `Undangan pernikahan ${config.couple.groom.name} & ${config.couple.bride.name}`,
+    title: isTasyakur
+      ? `${person1} & ${person2} — Tasyakur Menjelang Pernikahan`
+      : `${person1} & ${person2} — Wedding Invitation`,
+    description: isTasyakur
+      ? `Tasyakur Menjelang Pernikahan ${fullName1} & ${fullName2}`
+      : `Undangan pernikahan ${fullName1} & ${fullName2}`,
     type: "website",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#708238",
+  themeColor: "#5A6642",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -58,9 +79,11 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${fredoka.variable} ${cormorant.variable} ${poppins.variable} ${caveat.variable}`}
+      className={`${display.variable} ${body.variable} ${arabic.variable} ${accent.variable}`}
     >
-      <body className="bg-ivory font-body text-ink antialiased">{children}</body>
+      <body className="bg-ivory-50 font-body text-ink antialiased">
+        {children}
+      </body>
     </html>
   );
 }

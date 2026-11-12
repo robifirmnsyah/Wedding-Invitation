@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
 import { parseCsv } from "@/lib/csv";
-import { generateFreshGuestCode, normalizeSide } from "@/lib/guests";
-import { CATEGORY_COLORS } from "@/lib/colors";
+import { importGuests } from "@/lib/google-sheets";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +12,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const side = normalizeSide(body.side);
+  const side = body.side === "bride" ? "bride" : "groom";
   const csv = body.csv || "";
   if (!csv.trim()) {
     return NextResponse.json({ error: "CSV kosong." }, { status: 400 });
@@ -41,27 +39,8 @@ export async function POST(req: Request) {
 
   const dataRows = rows.slice(1);
 
-  // Pre-fetch categories
-  const { data: existingCatsData } = await supabaseAdmin
-    .from("guest_categories")
-    .select("id, name, side")
-    .eq("side", side);
-
-  const categories = new Map(existingCatsData?.map((c) => [c.name.toLowerCase(), c.id]) || []);
-
-  // Pre-fetch existing guests for this side
-  const { data: existingGuestsData } = await supabaseAdmin
-    .from("guests")
-    .select("id, unique_code")
-    .eq("side", side);
-    
-  const guestIdsByCode = new Map(existingGuestsData?.map((g) => [g.unique_code, g.id]) || []);
-  const claimedCodes = new Set(existingGuestsData?.map((g) => g.unique_code) || []);
-
-  let created = 0;
-  let updated = 0;
-  let categoriesCreated = 0;
-  let errors: { line: number; message: string }[] = [];
+  const guests: { unique_code?: string; name: string; category: string; pax: number; contact_type: string; contact: string; side: "bride" | "groom" }[] = [];
+  const errors: { line: number; message: string }[] = [];
 
   for (let i = 0; i < dataRows.length; i++) {
     const row = dataRows[i];
@@ -87,80 +66,12 @@ export async function POST(req: Request) {
       }
     }
 
-    // Auto-create category if needed
-    let category_id = categories.get(categoryName.toLowerCase());
-    if (!category_id) {
-      const randomColor = CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)].id;
-
-      const { data: newCat, error: catErr } = await supabaseAdmin
-        .from("guest_categories")
-        .insert({ name: categoryName, side, color: randomColor })
-        .select("id")
-        .single();
-      
-      if (catErr || !newCat) {
-        errors.push({ line: lineNum, message: `Gagal membuat kategori '${categoryName}'.` });
-        continue;
-      }
-      category_id = newCat.id;
-      categories.set(categoryName.toLowerCase(), category_id);
-      categoriesCreated++;
-    }
-
-    // Insert or update guest
-    const existingId = unique_code ? guestIdsByCode.get(unique_code) : undefined;
-    
-    if (existingId) {
-      // Update
-      const { error: updErr } = await supabaseAdmin
-        .from("guests")
-        .update({
-          name,
-          category_id,
-          side,
-          pax,
-          contact_type,
-          contact,
-        })
-        .eq("id", existingId);
-
-      if (updErr) {
-        errors.push({ line: lineNum, message: "Gagal memperbarui tamu." });
-      } else {
-        updated++;
-      }
-    } else {
-      // Create new
-      const newCode = await generateFreshGuestCode(supabaseAdmin, claimedCodes);
-      if (!newCode) {
-        errors.push({ line: lineNum, message: "Gagal membuat kode unik untuk tamu baru." });
-        continue;
-      }
-
-      const { data: newGuest, error: insErr } = await supabaseAdmin
-        .from("guests")
-        .insert({
-          unique_code: newCode,
-          name,
-          category_id,
-          side,
-          pax,
-          contact_type,
-          contact,
-        })
-        .select("id, unique_code")
-        .single();
-
-      if (insErr || !newGuest) {
-        errors.push({ line: lineNum, message: "Gagal menambahkan tamu." });
-      } else {
-        guestIdsByCode.set(newGuest.unique_code, newGuest.id);
-        created++;
-      }
-    }
+    guests.push({ unique_code, name, category: categoryName, pax, contact_type, contact, side });
   }
 
+  const result = await importGuests(guests);
+
   return NextResponse.json({
-    summary: { created, updated, categoriesCreated, errors },
+    summary: { ...result, errors: [...errors, ...result.errors] },
   });
 }

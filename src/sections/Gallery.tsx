@@ -1,65 +1,202 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { SectionTitle } from "@/components/Decor";
+import { AnimatePresence, motion } from "framer-motion";
+import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import { Lightbox } from "@/components/Lightbox";
-import { inViewOnce } from "@/animations/variants";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import config from "@/lib/config";
 
-const spanClass: Record<string, string> = {
-  tall: "row-span-2",
-  wide: "col-span-2",
-  square: "",
-};
+const AUTO_ADVANCE_MS = 4800;
+const SLIDE_DURATION = 0.9;
+const RAIL_SECONDS_PER_PHOTO = 4.8;
+const EASE = [0.16, 1, 0.3, 1] as const;
 
-/** Scrapbook collage grid with brush-script captions + lightbox. */
+/**
+ * A portrait-album scene: one large image is the focus, while the thumbnails
+ * below invite guests to browse without making the page feel like a dense grid.
+ */
 export function Gallery() {
-  const [active, setActive] = useState<number | null>(null);
   const items = config.gallery;
+  const [displayedIndex, setDisplayedIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const railTrackRef = useRef<HTMLDivElement>(null);
+  const [railDistance, setRailDistance] = useState(0);
+  const reducedMotion = usePrefersReducedMotion();
+  const current = items[displayedIndex];
+  const nextIndex = (displayedIndex + 1) % items.length;
+  const railItems = [...items, ...items];
+
+  const move = (direction: -1 | 1) => {
+    setSlideDirection(direction);
+    setDisplayedIndex((index) => (index + direction + items.length) % items.length);
+  };
+
+  // Keep one upcoming image warm so the gentle crossfade never waits for a
+  // network request. The rest remain lazy-loaded until a guest reaches them.
+  useEffect(() => {
+    const preloaded = new window.Image();
+    preloaded.src = items[nextIndex].src;
+  }, [items, nextIndex]);
+
+  // The rail contains two identical runs. Translating exactly one run means
+  // the restart is invisible: it is a continuous right-to-left marquee.
+  useEffect(() => {
+    const updateDistance = () => {
+      const track = railTrackRef.current;
+      if (track) setRailDistance(track.scrollWidth / 2);
+    };
+
+    updateDistance();
+    window.addEventListener("resize", updateDistance);
+    return () => window.removeEventListener("resize", updateDistance);
+  }, []);
+
+  // A self-scheduling timer avoids intersection-observer edge cases on mobile
+  // browsers. It lets each photo breathe before the next gentle transition,
+  // pauses for the lightbox, then resumes after the guest closes it.
+  useEffect(() => {
+    if (lightboxIndex !== null) return;
+
+    const timeout = window.setTimeout(() => {
+      setSlideDirection(1);
+      setDisplayedIndex((index) => (index + 1) % items.length);
+    }, AUTO_ADVANCE_MS);
+
+    return () => window.clearTimeout(timeout);
+  }, [items.length, lightboxIndex, displayedIndex]);
 
   return (
-    <section className="section-pad relative overflow-hidden bg-beige/55 backdrop-blur-sm">
-      <SectionTitle eyebrow="Captured Moments" title="Our Gallery" />
+    <section aria-labelledby="gallery-title" className="section-pad overflow-hidden ">
+      <div className="mx-auto max-w-3xl text-center">
+        <p className="font-accent text-[clamp(2.55rem,11vw,4rem)] leading-none text-olive-800">
+          Portraits of Us
+        </p>
+        <p id="gallery-title" className="mt-3 font-body text-sm tracking-[0.12em] text-olive-700">
+          A collection of our favorite moments
+        </p>
+      </div>
 
-      <div className="mx-auto mt-10 grid max-w-4xl auto-rows-[140px] grid-cols-2 gap-3 sm:auto-rows-[180px] sm:grid-cols-4">
-        {items.map((item, i) => (
-          <motion.button
-            key={item.src}
-            type="button"
-            onClick={() => setActive(i)}
-            className={`group relative overflow-hidden rounded-xl ring-1 ring-olive/10 ${
-              spanClass[item.span] ?? ""
-            }`}
-            initial={{ opacity: 0, scale: 0.94 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={inViewOnce}
-            transition={{ duration: 0.6, delay: (i % 4) * 0.08 }}
-          >
-            <Image
-              src={item.src}
-              alt={item.caption || `Foto ${i + 1}`}
-              fill
-              loading="lazy"
-              sizes="(max-width: 640px) 50vw, 25vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <span className="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-            {item.caption && (
-              <span className="absolute bottom-2 left-3 font-script text-xl text-ivory drop-shadow-md">
-                {item.caption}
+      <div className="mx-auto mt-9 max-w-2xl sm:max-w-3xl">
+        <div className="relative aspect-square w-full overflow-hidden rounded-[1.75rem]  shadow-paper sm:rounded-[2.25rem]">
+          <AnimatePresence initial={false} mode="sync">
+            <motion.button
+              key={current.src}
+              type="button"
+              aria-label={`Perbesar foto: ${current.caption}`}
+              className="absolute inset-0 block w-full cursor-zoom-in"
+              initial={{ opacity: 0, x: 60 * slideDirection, scale: 1.015 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -60 * slideDirection, scale: 0.99 }}
+              transition={{ duration: reducedMotion ? 0 : SLIDE_DURATION, ease: EASE }}
+              onClick={() => setLightboxIndex(displayedIndex)}
+            >
+              <Image
+                src={current.src}
+                alt={current.caption}
+                fill
+                loading="lazy"
+                sizes="(max-width: 640px) calc(100vw - 2.5rem), 48rem"
+                className="object-cover"
+                style={{ objectPosition: "center center" }}
+              />
+              <span className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-olive-950/45 to-transparent" />
+              <span className="absolute bottom-4 left-5 font-display text-lg italic text-ivory-50 sm:bottom-5 sm:left-6">
+                {current.caption}
               </span>
-            )}
-          </motion.button>
-        ))}
+            </motion.button>
+          </AnimatePresence>
+
+          <button
+            type="button"
+            onClick={() => move(-1)}
+            aria-label="Foto sebelumnya"
+            className="absolute left-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-white drop-shadow-md transition-transform hover:scale-110 sm:left-4"
+          >
+            <HiChevronLeft className="h-8 w-8" />
+          </button>
+          <button
+            type="button"
+            onClick={() => move(1)}
+            aria-label="Foto berikutnya"
+            className="absolute right-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-white drop-shadow-md transition-transform hover:scale-110 sm:right-4"
+          >
+            <HiChevronRight className="h-8 w-8" />
+          </button>
+        </div>
+
+        <p className="mt-3 text-center font-body text-xs tracking-[0.08em] text-olive-700/75" aria-live="off">
+          Foto {displayedIndex + 1} dari {items.length}
+        </p>
+
+        <div className="mt-4 overflow-hidden pb-2 sm:mt-5">
+          <motion.div
+            ref={railTrackRef}
+            className="flex items-center gap-3"
+            initial={false}
+            animate={railDistance && !reducedMotion ? { x: [0, -railDistance] } : { x: 0 }}
+            transition={{
+              duration: railDistance ? items.length * RAIL_SECONDS_PER_PHOTO : 0,
+              ease: "linear",
+              repeat: Infinity,
+              repeatType: "loop",
+            }}
+          >
+            {railItems.map((item, railIndex) => {
+              const index = railIndex % items.length;
+              const isPrimaryCopy = railIndex < items.length;
+              const isWide = item.span === "wide";
+              return (
+                <button
+                  key={`${item.src}-${railIndex}`}
+                  type="button"
+                  onClick={() => {
+                    setSlideDirection(index >= displayedIndex ? 1 : -1);
+                    setDisplayedIndex(index);
+                  }}
+                  aria-label={`Pilih foto ${index + 1}: ${item.caption}`}
+                  aria-current={displayedIndex === index ? "true" : undefined}
+                  tabIndex={isPrimaryCopy ? 0 : -1}
+                  className={`relative h-20 shrink-0 overflow-hidden rounded-xl border-2 transition sm:h-24 ${
+                    isWide ? "aspect-[3/2]" : "aspect-[2/3]"
+                  } ${
+                    displayedIndex === index
+                      ? "border-gold-600 shadow-paper"
+                      : "border-transparent opacity-70 hover:opacity-100"
+                  }`}
+                >
+                  <Image
+                    src={item.src}
+                    alt=""
+                    fill
+                    sizes="8rem"
+                    className="object-cover"
+                    style={{ objectPosition: "center center" }}
+                  />
+                </button>
+              );
+            })}
+          </motion.div>
+        </div>
+
+        <div className="mt-12 text-center sm:mt-14">
+          <p className="font-display text-base font-medium tracking-[0.18em] text-olive-800 sm:text-lg">
+            #pasTIBIsah
+          </p>
+        </div>
       </div>
 
       <Lightbox
         items={items}
-        index={active}
-        onClose={() => setActive(null)}
-        onNavigate={setActive}
+        index={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        onNavigate={(index) => {
+          setLightboxIndex(index);
+          setSlideDirection(index >= displayedIndex ? 1 : -1);
+          setDisplayedIndex(index);
+        }}
       />
     </section>
   );

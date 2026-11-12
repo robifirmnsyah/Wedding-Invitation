@@ -2,25 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Vintage Garden Editorial tokens (design-system/MASTER.md) ─── */
 :root {
-  --olive: #708238;
-  --ivory: #faf8f3;
-  --cream: #f5f0e6;
-  --sage: #dce4d3;
-  --beige: #e9e1d3;
-  --ink: #3b3b3b;
+  /* color primitives */
+  --olive-950: #252a1f;
+  --olive-900: #333b2b;
+  --olive-700: #4a5438;
+  --olive-600: #5a6642;
+  --olive-500: #6e7a52;
+  --sage-500: #8a9474;
+  --sage-300: #b4bca2;
+  --sage-100: #dde2d1;
+  --ivory-50: #fbf9f3;
+  --ivory-100: #f6f2e8;
+  --beige-200: #eae0ce;
+  --beige-300: #dccfb6;
+  --gold-600: #8c7443;
+  --gold-700: #756034;
+
+  /* semantic roles */
+  --color-bg: var(--ivory-50);
+  --color-surface: var(--ivory-100);
+  --color-text: var(--olive-900);
+  --color-text-muted: var(--olive-700);
+  --color-text-subtle: var(--sage-500);
+  --color-primary: var(--olive-600);
+  --color-on-primary: var(--ivory-50);
+  --color-border: var(--sage-300);
+  --color-border-accent: var(--gold-600);
+  --color-error: #8c3a2e;
+
+  /* legacy variable names (migrated values) */
+  --olive: var(--olive-600);
+  --ivory: var(--ivory-50);
+  --cream: var(--ivory-100);
+  --sage: var(--sage-300);
+  --beige: var(--beige-200);
+  --ink: var(--olive-900);
+
+  /* fluid type scale */
+  --text-display: clamp(2.5rem, 8vw + 1rem, 4.5rem);
+  --text-h1: clamp(2rem, 5vw + 0.75rem, 3.25rem);
+  --text-h2: clamp(1.5rem, 3vw + 0.75rem, 2.25rem);
+  --text-h3: clamp(1.25rem, 2vw + 0.75rem, 1.5rem);
+  --text-lead: clamp(1.125rem, 1vw + 0.9rem, 1.25rem);
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-arabic: clamp(1.5rem, 4vw + 0.5rem, 2.25rem);
+
+  /* layout */
+  --width-content: 42rem;
+  --width-wide: 56rem;
+  --width-max: 72rem;
+
+  /* borders & shadows */
+  --border-hairline: 1px solid var(--sage-300);
+  --border-gold: 1px solid var(--gold-600);
+  --shadow-paper: 0 1px 2px rgb(37 42 31 / 0.06), 0 8px 24px rgb(37 42 31 / 0.08);
+  --shadow-lifted: 0 2px 4px rgb(37 42 31 / 0.08), 0 16px 40px rgb(37 42 31 / 0.12);
+
+  /* motion */
+  --motion-duration-fast: 200ms;
+  --motion-duration-base: 800ms;
+  --motion-duration-slow: 1100ms;
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-in: cubic-bezier(0.4, 0, 1, 1);
 }
 
 * {
   -webkit-tap-highlight-color: transparent;
 }
 
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--olive-600);
+  outline-offset: 3px;
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
+
 html {
   scroll-behavior: smooth;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
 }
 
 body {
-  overflow-x: hidden;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+  font-size: var(--text-body);
+  line-height: 1.7;
 }
 
 /* Lenis smooth scroll */
@@ -41,79 +116,229 @@ html.lenis body {
 /* When the invitation is not yet opened, lock the page */
 body.locked {
   overflow: hidden;
-  height: 100vh;
+  height: 100svh;
 }
 
 @layer components {
   .section-pad {
-    @apply px-5 py-20 sm:px-8 md:py-28;
+    @apply px-5 py-16 sm:px-8 md:py-24;
   }
 
-  .heading-script {
-    @apply font-heading font-semibold text-olive;
+  /* Eyebrow chapter label: small caps over the title */
+  .eyebrow {
+    @apply font-body text-xs font-medium uppercase tracking-[0.2em] text-gold-700 sm:text-sm;
   }
 
-  /* Watercolor-textured soft paper card */
+  .chapter-title {
+    @apply font-display font-semibold text-olive-700;
+    font-size: var(--text-h2);
+    line-height: 1.2;
+  }
+
+  /* Paper card — the only general card surface */
   .paper-card {
-    background:
-      radial-gradient(120% 120% at 0% 0%, rgba(220, 228, 211, 0.55) 0%, transparent 45%),
-      radial-gradient(120% 120% at 100% 100%, rgba(233, 225, 211, 0.6) 0%, transparent 45%),
-      #faf8f3;
-    box-shadow:
-      0 10px 30px -12px rgba(86, 101, 41, 0.25),
-      inset 0 0 0 1px rgba(112, 130, 56, 0.08);
+    background: var(--ivory-100);
+    border: var(--border-hairline);
+    box-shadow: var(--shadow-paper);
+    border-radius: 8px;
   }
 
-  .glass-soft {
-    background: rgba(250, 248, 243, 0.72);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+  /* Keepsake frame: paper card + double gold hairline (≤2 per page) */
+  .keepsake-frame {
+    background: var(--ivory-100);
+    border: var(--border-gold);
+    outline: 1px solid var(--gold-600);
+    outline-offset: 4px;
+    box-shadow: var(--shadow-paper);
   }
 
-  /* Olive outline button */
+  /* Primary button */
   .btn-olive {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-olive px-7 py-3 font-body text-sm font-medium tracking-wide text-ivory shadow-lg transition-all duration-300;
-    box-shadow: 0 8px 22px -8px rgba(86, 101, 41, 0.7);
+    @apply inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded bg-olive-600 px-8 py-3.5 font-body text-sm font-medium uppercase tracking-[0.05em] text-ivory-50;
+    box-shadow: 0 1px 2px rgb(37 42 31 / 0.08);
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-out);
+    touch-action: manipulation;
   }
   .btn-olive:hover {
-    @apply bg-olive-dark;
-    transform: translateY(-2px);
+    @apply bg-olive-700;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-paper);
+  }
+  .btn-olive:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 1px 2px rgb(37 42 31 / 0.08);
   }
 
+  /* Secondary button */
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-olive/40 bg-ivory/60 px-5 py-2.5 font-body text-sm text-olive-dark transition-all duration-300;
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded border border-olive-600 bg-transparent px-5 py-2.5 font-body text-sm font-medium text-olive-700;
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
   }
   .btn-ghost:hover {
-    @apply bg-sage/50;
+    @apply bg-sage-100;
+    transform: translateY(-1px);
+  }
+  .btn-ghost:active {
+    transform: translateY(0) scale(0.98);
   }
 
-  /* Decorative divider */
-  .divider-leaf {
-    @apply mx-auto my-6 flex items-center justify-center gap-3 text-olive/60;
+  /* Icon button: hairline circle, ≥44px target */
+  .btn-icon {
+    @apply inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-sage-300 bg-ivory-100 text-olive-700;
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+  }
+  .btn-icon:hover {
+    @apply bg-sage-100;
+    transform: scale(1.05);
+  }
+  .btn-icon:active {
+    transform: scale(0.95);
+  }
+
+  /* Overlay control shared by the lightbox and QRIS modal */
+  .lightbox-control {
+    @apply flex h-11 w-11 items-center justify-center text-ivory-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-600;
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-ease-out),
+      transform var(--motion-duration-fast) var(--motion-ease-out);
+  }
+  .lightbox-control:hover {
+    @apply bg-ivory-50/15;
+    transform: scale(1.05);
+  }
+  .lightbox-control:active {
+    transform: scale(0.94);
+  }
+
+  /* Standard chapter divider: hairline interrupted by an etched sprig */
+  .sprig-divider {
+    @apply mx-auto my-6 flex w-full max-w-xs items-center justify-center gap-3 text-sage-500;
+  }
+  .sprig-divider::before,
+  .sprig-divider::after {
+    content: "";
+    @apply h-px flex-1 bg-sage-300;
   }
 }
 
-/* Rope/knot circular frame for bride & groom */
-.rope-frame {
-  position: relative;
-  border-radius: 9999px;
-  padding: 10px;
-  background: conic-gradient(
-    from 0deg,
-    #b9a77f 0deg 12deg,
-    #cdbd97 12deg 24deg
-  );
+/* Arabic verse — Amiri, generous leading, never letter-spaced */
+.arabic-verse {
+  font-family: var(--font-arabic), serif;
+  font-size: var(--text-arabic);
+  line-height: 2;
+  letter-spacing: 0;
+}
+
+/* Arch photo frame — the single signature shape */
+.arch-frame {
+  border-radius: 999px 999px 0 0;
+  overflow: hidden;
+}
+
+.vintage-garden-cover {
+  background-image:
+    radial-gradient(circle at 20% 15%, rgb(180 188 162 / 0.12), transparent 34%),
+    radial-gradient(circle at 80% 85%, rgb(220 207 182 / 0.2), transparent 38%);
+  touch-action: pan-y;
+}
+
+.vintage-garden-arch {
+  border: 1px solid rgb(140 116 67 / 0.34);
+  border-bottom-color: rgb(140 116 67 / 0.18);
+  border-radius: 999px 999px 10px 10px;
   box-shadow:
-    0 12px 30px -10px rgba(86, 101, 41, 0.4),
-    inset 0 0 0 3px rgba(112, 130, 56, 0.25);
+    inset 0 0 0 4px rgb(251 249 243 / 0.28),
+    0 0 28px rgb(246 242 232 / 0.42);
 }
 
-/* Arch / oval shaped event card */
-.arch-card {
-  border-top-left-radius: 50% 28%;
-  border-top-right-radius: 50% 28%;
-  border-bottom-left-radius: 14px;
-  border-bottom-right-radius: 14px;
+@media (max-height: 680px) {
+  .vintage-garden-cover .eyebrow {
+    font-size: 0.65rem;
+  }
+}
+
+/* Music button playing indicator — the one allowed continuous animation
+   (MASTER.md §15.4); halted entirely under prefers-reduced-motion. */
+@keyframes music-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+.music-note-playing {
+  animation: music-bob 1.6s ease-in-out infinite;
+}
+
+/* Vinyl record spin — matches the music button's playing state. */
+@keyframes vinyl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.vinyl-spinning {
+  animation: vinyl-spin 3.2s linear infinite;
+}
+
+/* Falling blossom petals — gentle continuous drift (transform/opacity only). */
+@keyframes petal-fall {
+  0% {
+    transform: translate(0, -10vh) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(12px, 50vh) rotate(150deg);
+  }
+  92% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-10px, 112vh) rotate(300deg);
+    opacity: 0;
+  }
+}
+.petal {
+  position: absolute;
+  top: 0;
+  animation: petal-fall linear infinite;
+  animation-duration: var(--petal-duration, 12s);
+  animation-delay: var(--petal-delay, 0s);
+  will-change: transform, opacity;
+}
+
+/* Cover scroll cue — the only other allowed loop (§15.4). */
+@keyframes cue-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+.scroll-cue {
+  animation: cue-drift 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-note-playing,
+  .scroll-cue {
+    animation: none;
+  }
 }
 
 /* hide scrollbar utility */
@@ -125,12 +350,44 @@ body.locked {
   scrollbar-width: none;
 }
 
+/* Skip link — visually hidden until focused */
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 100;
+  transform: translateY(-200%);
+  background: var(--olive-600);
+  color: var(--ivory-50);
+  padding: 0.75rem 1.25rem;
+  border-radius: 4px;
+  transition: transform 150ms var(--motion-ease-out);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+
+  /* hover/press transforms become instant colour-only feedback */
+  .btn-olive:hover,
+  .btn-ghost:hover,
+  .btn-icon:hover,
+  .lightbox-control:hover,
+  .btn-olive:active,
+  .btn-ghost:active,
+  .btn-icon:active,
+  .lightbox-control:active {
+    transform: none;
   }
 }
