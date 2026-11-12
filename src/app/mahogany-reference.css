@@ -839,6 +839,9 @@
   left: -52px;
   top: -30px;
 }
+@media (min-width: 1024px) {
+  .m-reveal-next { bottom: 8px; z-index: 8; }
+}
 
 /* A viewport layer keeps the textile continuous without visible tile seams. */
 .m-main {
