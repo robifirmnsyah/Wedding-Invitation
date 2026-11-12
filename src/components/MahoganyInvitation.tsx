@@ -12,7 +12,7 @@ const art = "/assets/mahogany/";
 function Floral({ side = "right" }: { side?: "left" | "right" }) {
   return (
     <Image
-      src={`${art}florals.webp`}
+      src={`${art}orchids.webp`}
       alt=""
       width={360}
       height={420}
@@ -316,6 +316,17 @@ export function InvitationShell() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const opened = phase === "open";
+  const stageRef = useRef<HTMLElement>(null);
+  const [showNav, setShowNav] = useState(false);
+  useEffect(() => {
+    if (!opened || !stageRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowNav(!entry.isIntersecting),
+      { threshold: 0.15 },
+    );
+    observer.observe(stageRef.current);
+    return () => observer.disconnect();
+  }, [opened]);
   useEffect(() => {
     document.body.classList.toggle("locked", !opened);
     return () => document.body.classList.remove("locked");
@@ -327,12 +338,13 @@ export function InvitationShell() {
     ).matches;
     const timer = window.setTimeout(
       () => setPhase("open"),
-      reduced ? 100 : 1600,
+      reduced ? 100 : 2400,
     );
     return () => window.clearTimeout(timer);
   }, [phase]);
   useEffect(() => {
-    if (opened) contentRef.current?.focus({ preventScroll: true });
+    if (opened)
+      document.getElementById("m-reveal-next")?.focus({ preventScroll: true });
   }, [opened]);
   useEffect(() => {
     if (selectedPhoto !== null) lightbox.current?.showModal();
@@ -347,8 +359,8 @@ export function InvitationShell() {
     <div className="mahogany">
       <aside className="m-desktop" aria-label="Fynna dan Pipin">
         <Image
-          src={config.hero.photo}
-          alt="Fynna dan Pipin"
+          src={`${art}stage-v2.webp`}
+          alt=""
           fill
           priority
           sizes="60vw"
@@ -369,115 +381,93 @@ export function InvitationShell() {
         <Floral side="left" />
       </aside>
       <main className="m-main">
-        {!opened ? (
-          <div className={`m-cover m-${phase}`}>
-            <Image
-              src={`${art}curtains.webp`}
-              alt=""
-              fill
-              priority
-              sizes="(min-width: 1024px) 520px, 100vw"
-              className="m-cover-bg"
-            />
-            <div className="m-cover-content">
-              <span className="m-eyebrow">THE WEDDING OF</span>
-              <h1>
-                Fynna <span>&</span> Pipin
-              </h1>
-              <p className="m-cover-date">05 · 01 · 2027</p>
-              <button
-                className="m-envelope"
-                onClick={open}
-                disabled={phase !== "closed"}
-                aria-label="Buka undangan Fynna dan Pipin"
-              >
-                <span className="m-letter">
-                  <span className="m-eyebrow">YOU ARE INVITED</span>
-                  <span>Fynna & Pipin</span>
-                </span>
-                <Image
-                  src={`${art}envelope.webp`}
-                  alt="Amplop undangan ivory dengan segel mahogany"
-                  width={600}
-                  height={400}
-                  priority
-                  className="m-envelope-back"
-                />
-                <Image
-                  src={`${art}envelope.webp`}
-                  alt=""
-                  width={600}
-                  height={400}
-                  priority
-                  className="m-envelope-flap"
-                />
-                <span className="m-seal-monogram">F&amp;P</span>
-              </button>
-              <div className="m-guest">
-                <p>Kepada Yth. Bapak/Ibu/Saudara/i</p>
-                <strong>{guest.name}</strong>
+        {opened && <div className="m-fabric" aria-hidden="true" />}
+        <header className={`m-stage m-${phase}`} ref={stageRef}>
+          <Image
+            src={`${art}stage-v2.webp`}
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 1024px) 520px, 100vw"
+            className="m-stage-bg"
+          />
+          <div className="m-stage-heading" aria-hidden={phase !== "closed"}>
+            <p className="m-stage-script">We’re</p>
+            <p className="m-stage-announcement">GETTING MARRIED</p>
+            <h1>
+              Fynna <span>&</span> Pipin
+            </h1>
+            <p className="m-cover-date">05 · 01 · 2027</p>
+          </div>
+          <div className="m-stationery">
+            <div className="m-envelope-lining" aria-hidden="true" />
+            <div className="m-lace-letter" aria-hidden={!opened}>
+              <Image
+                src={`${art}lace-card.webp`}
+                alt=""
+                width={1024}
+                height={1536}
+                priority
+                className="m-lace-art"
+              />
+              <div className="m-letter-copy">
+                <span className="m-letter-mark">F & P</span>
+                <p>
+                  “Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia
+                  menciptakan pasangan-pasangan untukmu dari jenismu sendiri…”
+                </p>
+                <span>QS. Ar-Rum: 21</span>
               </div>
-              <button
-                className="m-button"
-                onClick={open}
-                disabled={phase !== "closed"}
-              >
-                {phase === "opening" ? "Membuka undangan…" : "Buka Undangan"}
-                <span aria-hidden="true">↗</span>
-              </button>
-              <p className="m-cover-caption">
-                Dengan penuh cinta, kami mengundang Anda.
-              </p>
+              <Floral side="left" />
+            </div>
+            <div className="m-envelope-pocket" aria-hidden="true" />
+            <div className="m-envelope-fold" aria-hidden="true" />
+            <button
+              className="m-wax"
+              onClick={open}
+              disabled={phase !== "closed"}
+              tabIndex={phase === "closed" ? 0 : -1}
+              aria-label="Buka undangan Fynna dan Pipin"
+            >
+              F&P
+            </button>
+            <div className="m-envelope-spray" aria-hidden="true">
+              <Floral />
             </div>
           </div>
-        ) : (
+          <div className="m-stage-guest" aria-hidden={phase !== "closed"}>
+            <p>Kepada Yth. Bapak/Ibu/Saudara/i</p>
+            <strong>{guest.name}</strong>
+            <button
+              className="m-open-link"
+              onClick={open}
+              disabled={phase !== "closed"}
+              tabIndex={phase === "closed" ? 0 : -1}
+            >
+              {phase === "opening" ? "Membuka undangan…" : "Buka Undangan"}
+              <span aria-hidden="true"> ↗</span>
+            </button>
+          </div>
+          {opened && (
+            <a id="m-reveal-next" className="m-reveal-next" href="#mempelai">
+              Dengan cinta, kami mengundang Anda
+              <span aria-hidden="true">↓</span>
+            </a>
+          )}
+        </header>
+        {opened && (
           <div className="m-content" ref={contentRef} tabIndex={-1}>
             <a className="m-skip" href="#acara">
               Langsung ke detail acara
             </a>
-            <header className="m-hero">
-              <Image
-                src={config.hero.photo}
-                alt="Fynna dan Pipin bersama"
-                fill
-                priority
-                sizes="(min-width: 1024px) 520px, 100vw"
-              />
-              <div className="m-hero-shade" />
-              <div className="m-hero-title">
-                <span className="m-eyebrow">
-                  TOGETHER, BY THE GRACE OF ALLAH
-                </span>
-                <h1>
-                  Fynna <span>&</span> Pipin
-                </h1>
-                <p>Selasa, 5 Januari 2027</p>
-                <a href="#pembuka" className="m-scroll">
-                  Our forever begins <span aria-hidden="true">↓</span>
-                </a>
-              </div>
-              <Floral />
-            </header>
-            <Section
-              id="pembuka"
-              label="IN THE NAME OF ALLAH"
-              title="Sebuah Janji, Selamanya"
-              light
-            >
-              <p className="m-bismillah" lang="ar" dir="rtl">
-                بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-              </p>
-              <p className="m-quote-arabic" lang="ar" dir="rtl">
-                {config.quote.arabic}
-              </p>
-              <blockquote>“{config.quote.translation}”</blockquote>
-              <p className="m-eyebrow">{config.quote.ref}</p>
-            </Section>
             <Section
               id="mempelai"
               label="TWO HEARTS, ONE JOURNEY"
               title="Mempelai"
             >
+              <p className="m-bismillah" lang="ar" dir="rtl">
+                بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+              </p>
               <p>
                 Dengan memohon rahmat dan rida Allah SWT, kami mengundang Anda
                 untuk merayakan pernikahan kami.
@@ -504,19 +494,21 @@ export function InvitationShell() {
                           className="m-frame"
                         />
                       </div>
-                      <p className="m-eyebrow">
-                        {index === 0 ? "THE BRIDE" : "THE GROOM"}
-                      </p>
-                      <h3>{person.fullName}</h3>
-                      <p>{person.parents}</p>
-                      <a
-                        className="m-text-link"
-                        href={`https://www.instagram.com/${person.instagram}/`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        @{person.instagram} ↗
-                      </a>
+                      <div className="m-person-copy">
+                        <p className="m-eyebrow">
+                          {index === 0 ? "THE BRIDE" : "THE GROOM"}
+                        </p>
+                        <h3>{person.fullName}</h3>
+                        <p>{person.parents}</p>
+                        <a
+                          className="m-text-link"
+                          href={`https://www.instagram.com/${person.instagram}/`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          @{person.instagram} ↗
+                        </a>
+                      </div>
                       {index === 0 && (
                         <span className="m-ampersand" aria-hidden="true">
                           &
@@ -526,6 +518,13 @@ export function InvitationShell() {
                   );
                 })}
               </div>
+              <details className="m-full-verse">
+                <summary>QS. Ar-Rum: 21</summary>
+                <p lang="ar" dir="rtl" className="m-quote-arabic">
+                  {config.quote.arabic}
+                </p>
+                <p>{config.quote.translation}</p>
+              </details>
               <Floral side="left" />
             </Section>
             <Section
@@ -575,15 +574,62 @@ export function InvitationShell() {
                 )}
               </div>
             </Section>
+            <Section id="hadiah" label="A TOKEN OF LOVE" title="Wedding Gift">
+              <p>{config.gift.note}</p>
+              <div className="m-bank-list">
+                {config.gift.banks.map((bank) => (
+                  <article className="m-bank" key={bank.number}>
+                    <span className="m-bank-name">{bank.bank}</span>
+                    <span className="m-bank-number">{bank.number}</span>
+                    <p>a.n. {bank.holder}</p>
+                    <CopyButton value={bank.number} />
+                  </article>
+                ))}
+              </div>
+              <div className="m-delivery">
+                <h3>Kirim tanda kasih</h3>
+                <p>{config.gift.address}</p>
+                <CopyButton
+                  value={config.gift.address || ""}
+                  label="Salin alamat"
+                />
+              </div>
+            </Section>
             <Section
               id="cerita"
               label="EVERY MOMENT LED US HERE"
               title="Our Love Story"
             >
+              <div
+                className="m-keepsakes"
+                aria-label="Kenangan Fynna dan Pipin"
+              >
+                <figure>
+                  <Image
+                    src="/assets/couple/photo-1.webp"
+                    alt="Fynna dan Pipin di tepi laut"
+                    width={300}
+                    height={400}
+                  />
+                  <figcaption>our beginning</figcaption>
+                </figure>
+                <figure>
+                  <Image
+                    src="/assets/couple/photo-3.webp"
+                    alt="Momen bersama Fynna dan Pipin"
+                    width={300}
+                    height={400}
+                  />
+                  <figcaption>our forever</figcaption>
+                </figure>
+                <span aria-hidden="true">F&P</span>
+              </div>
               <div className="m-timeline">
-                {config.loveStory.map((story, i) => (
+                {config.loveStory.map((story) => (
                   <article key={story.title}>
-                    <span className="m-story-number">0{i + 1}</span>
+                    <span className="m-story-number" aria-hidden="true">
+                      ♥
+                    </span>
                     <h3>{story.title}</h3>
                     {story.date && (
                       <span className="m-eyebrow">{story.date}</span>
@@ -620,32 +666,14 @@ export function InvitationShell() {
                 Setiap momen adalah bagian dari cerita kita.
               </p>
             </Section>
-            <Section id="hadiah" label="A TOKEN OF LOVE" title="Wedding Gift">
-              <p>{config.gift.note}</p>
-              <div className="m-bank-list">
-                {config.gift.banks.map((bank) => (
-                  <article className="m-bank" key={bank.number}>
-                    <span className="m-bank-name">{bank.bank}</span>
-                    <span className="m-bank-number">{bank.number}</span>
-                    <p>a.n. {bank.holder}</p>
-                    <CopyButton value={bank.number} />
-                  </article>
-                ))}
-              </div>
-              <div className="m-delivery">
-                <h3>Kirim tanda kasih</h3>
-                <p>{config.gift.address}</p>
-                <CopyButton
-                  value={config.gift.address || ""}
-                  label="Salin alamat"
-                />
-              </div>
-            </Section>
             <Wishes name={guest.name} code={guest.code} />
             <section className="m-closing">
               <Floral side="left" />
               <span className="m-eyebrow">WITH LOVE & GRATITUDE</span>
               <div className="m-closing-card">
+                <div className="m-closing-ornament" aria-hidden="true">
+                  ❦
+                </div>
                 <span className="m-divider" aria-hidden="true">
                   ✦
                 </span>
@@ -668,12 +696,14 @@ export function InvitationShell() {
               )}
               <p className="m-footer">MADE WITH LOVE · F & P</p>
             </section>
-            <nav className="m-nav" aria-label="Navigasi undangan">
-              <a href="#mempelai">Mempelai</a>
-              <a href="#acara">Acara</a>
-              <a href="#galeri">Galeri</a>
-              <a href="#ucapan">Ucapan</a>
-            </nav>
+            {showNav && (
+              <nav className="m-nav" aria-label="Navigasi undangan">
+                <a href="#mempelai">Mempelai</a>
+                <a href="#acara">Acara</a>
+                <a href="#galeri">Galeri</a>
+                <a href="#ucapan">Ucapan</a>
+              </nav>
+            )}
           </div>
         )}
       </main>

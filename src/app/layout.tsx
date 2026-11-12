@@ -8,6 +8,7 @@ import {
 import config, { isTasyakur } from "@/lib/config";
 import "./globals.css";
 import "./mahogany.css";
+import "./mahogany-reference.css";
 
 const display = Cormorant_Garamond({
   subsets: ["latin"],

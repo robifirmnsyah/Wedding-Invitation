@@ -1,6 +1,6 @@
 # Fynna & Pipin — Mahogany Romance
 
-Wedding invitation for **5 January 2027**, Yang Garden, Bandung. Customer content lives in `config/wedding.json`. The public page uses `src/components/MahoganyInvitation.tsx` and `src/app/mahogany.css`.
+Wedding invitation for **5 January 2027**, Yang Garden, Bandung. Customer content lives in `config/wedding.json`. The public page uses `src/components/MahoganyInvitation.tsx` and `src/app/mahogany.css` with `src/app/mahogany-reference.css`.
 
 ## Run
 
@@ -34,7 +34,7 @@ Set `NEXT_PUBLIC_SITE_URL` to the final HTTPS domain for social sharing. On Verc
 
 ## Assets
 
-New generated art is in `public/assets/mahogany`: curtains, satin fabric, florals, oval portrait frame and envelope. The envelope animation derives visual layers from one aligned master image with CSS clipping; lettering is live text. Florals and portrait frames preserve alpha. All production art and customer photos are optimized WebP. `docs/ASSET-PROMPTS.md` records the generation prompts.
+New generated art is in `public/assets/mahogany`: curtains, satin fabric, florals, oval portrait frame and envelope. The revised envelope uses separate CSS layers for its flap, pocket and wax seal, revealing the generated lace card. Lettering is live text. The reference revision adds a candlelit stage, cascading orchids and continuous dark drapery; see `docs/REFERENCE-REVISION.md` for the comparison and prompts. Florals and portrait frames preserve alpha. All production art and customer photos are optimized WebP. `docs/ASSET-PROMPTS.md` records the generation prompts.
 
 The older unused section components remain available as implementation history but are not rendered. Old customer photos, QR codes, music and icon assets are removed from public hosting.
 
