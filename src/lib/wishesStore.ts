@@ -1,17 +1,12 @@
-import { listPublicWishes, appendPublicWish, updatePublicWishReplies } from "./google-sheets";
+import {
+  listPublicWishes,
+  appendPublicWish,
+  updatePublicWishReplies,
+} from "./google-sheets";
 import type { Wish, WishReply } from "./types";
 
-let memory: Wish[] | null = null;
-
 export async function getWishes(): Promise<Wish[]> {
-  try {
-    const wishes = await listPublicWishes();
-    memory = wishes;
-    return wishes;
-  } catch (error) {
-    console.error("Failed to fetch wishes from Google Sheets:", error);
-    return memory || [];
-  }
+  return listPublicWishes();
 }
 
 function uid(): string {
@@ -34,14 +29,8 @@ export async function addWish(input: {
     replies: [],
   };
 
-  try {
-    await appendPublicWish(wish);
-    if (memory) memory = [wish, ...memory];
-  } catch (error) {
-    console.error("Failed to append wish to Google Sheets:", error);
-    if (memory) memory = [wish, ...memory];
-  }
-  
+  await appendPublicWish(wish);
+
   return wish;
 }
 
@@ -63,13 +52,7 @@ export async function addReply(input: {
 
   const newReplies = [...(target.replies || []), reply];
 
-  try {
-    await updatePublicWishReplies(input.wishId, newReplies);
-    target.replies = newReplies;
-  } catch (error) {
-    console.error("Failed to update replies in Google Sheets:", error);
-    target.replies = newReplies;
-  }
-  
+  await updatePublicWishReplies(input.wishId, newReplies);
+
   return reply;
 }

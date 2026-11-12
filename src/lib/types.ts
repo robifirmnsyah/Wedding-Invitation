@@ -68,12 +68,15 @@ export interface WeddingConfig {
     note: string;
     banks: BankAccount[];
     qris: string;
+    address?: string;
   };
   closing: {
     message: string;
     gratitude: string;
   };
   music: string;
+  musicTitle?: string;
+  musicUrl?: string;
 }
 
 export interface WishReply {

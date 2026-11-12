@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sessionCookie } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
@@ -6,10 +7,7 @@ export async function POST() {
   const res = NextResponse.json({ success: true });
 
   // Clear session cookie
-  const cookieName =
-    process.env.NODE_ENV === "production"
-      ? "__Host-admin_session"
-      : "admin_session";
+  const cookieName = sessionCookie;
 
   res.cookies.set(cookieName, "", {
     httpOnly: true,

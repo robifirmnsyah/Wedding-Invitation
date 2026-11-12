@@ -1,14 +1,24 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { sessionCookie, validAdminSession } from "@/lib/admin-session";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Redirect /admin/login directly to /admin dashboard
-  if (pathname === "/admin/login" || pathname === "/admin/login/") {
-    return NextResponse.redirect(new URL("/admin", request.url));
+  if (
+    pathname === "/admin/login" ||
+    pathname === "/admin/login/" ||
+    pathname === "/api/admin/login"
+  )
+    return NextResponse.next();
+  if (!(await validAdminSession(request.cookies.get(sessionCookie)?.value))) {
+    if (pathname.startsWith("/api/"))
+      return NextResponse.json(
+        { error: "Silakan masuk sebagai admin." },
+        { status: 401 },
+      );
+    return NextResponse.redirect(new URL("/admin/login", request.url));
   }
-
   return NextResponse.next();
 }
 

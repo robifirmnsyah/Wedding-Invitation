@@ -19,7 +19,7 @@ export function useGuestName(fallback = "Tamu Undangan"): string {
     const params = new URLSearchParams(window.location.search);
     const to = params.get("to") ?? params.get("kepada");
     if (to && to.trim()) {
-      setName(decodeURIComponent(to.trim().replace(/\+/g, " ")));
+      setName(to.trim());
     }
   }, [fallback]);
 
@@ -40,7 +40,7 @@ export function useGuestInfo(fallback = "Tamu Undangan"): GuestInfo {
 
     setInfo({
       name: to && to.trim()
-        ? decodeURIComponent(to.trim().replace(/\+/g, " "))
+        ? to.trim()
         : fallback,
       code: code && code.trim() ? code.trim().toUpperCase() : null,
     });

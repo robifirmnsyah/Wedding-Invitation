@@ -1,26 +1,26 @@
 {
   "couple": {
     "groom": {
-      "name": "Robi Firmansyah",
-      "shortName": "Robi",
-      "fullName": "Robi Firmansyah",
-      "parents": "Putra dari Bpk. Indra Gunawan & Ibu Tini Martini",
-      "instagram": "robifirmnsyah",
-      "photo": "/assets/bride-groom/groom.jpg"
+      "name": "Pipin Koswara",
+      "fullName": "Pipin Koswara",
+      "shortName": "Pipin",
+      "parents": "Putra dari Bpk. Dedi Supriadi & Ibu Yunengsih",
+      "instagram": "pipinmoore99",
+      "photo": "/assets/couple/photo-5.webp"
     },
     "bride": {
-      "name": "Tiara Nurillatiffah",
-      "shortName": "Tiara",
-      "fullName": "Tiara Nurillatiffah",
-      "parents": "Putri dari Bpk. Enung Suherman & Ibu Amah",
-      "instagram": "nurillatiffah_",
-      "photo": "/assets/bride-groom/bride.jpg"
+      "name": "Saufynna Ruhadyah",
+      "fullName": "Saufynna Ruhadyah",
+      "shortName": "Fynna",
+      "parents": "Putri dari Bpk. Yaya Cahyana & Ibu Wiangsih",
+      "instagram": "saufynnarh",
+      "photo": "/assets/couple/photo-5.webp"
     }
   },
   "hero": {
     "tagline": "The Wedding Of",
-    "dateLabel": "Sabtu, 5 September 2026",
-    "photo": "/assets/gallery/prewed/gambar-6.jpg"
+    "dateLabel": "Selasa, 5 Januari 2027",
+    "photo": "/assets/couple/photo-5.webp"
   },
   "quote": {
     "ref": "QS. Ar-Rum: 21",
@@ -29,138 +29,71 @@
   },
   "loveStory": [
     {
-      "title": "Awal Pertemuan",
-      "date": "MEI 2023",
-      "story": "Meski berasal dari kampus yang berbeda, takdir mempertemukan kami melalui sebuah program perkuliahan. Kami ditempatkan dalam satu kelompok untuk menyelesaikan sebuah proyek bersama. Dari komunikasi yang awalnya hanya membahas tugas, perlahan kami mulai mengenal satu sama lain.\n\nKetika program tersebut berakhir, komunikasi kami ternyata tetap berlanjut. Hingga sebuah pertemuan sederhana sambil menikmati mie ayam di RSHS menjadi awal dari perjalanan kami. Dari sanalah cerita ini dimulai."
+      "title": "Awal Kisah",
+      "date": "",
+      "photo": "/assets/couple/photo-1.webp",
+      "story": "Pada mulanya, kami hanyalah dua insan asing yang berjalan di jalan kehidupan masing-masing. Hingga akhirnya, semesta dengan segala cara indahnya mempertemukan kami pada satu titik yang sama. Sebuah pertemuan sederhana yang ternyata menjadi awal dari kisah luar biasa."
     },
     {
-      "title": "Memulai Perjalanan Bersama",
-      "date": "APRIL 2024",
-      "story": "Setelah menyelesaikan perkuliahan, kami memutuskan untuk mencari pekerjaan dan memulai kehidupan baru di Jakarta. Di kota ini, kami belajar hidup mandiri, menghadapi berbagai tantangan, serta saling menemani dalam setiap prosesnya.\n\nDi tengah segala suka dan duka, keyakinan kami untuk melangkah bersama semakin tumbuh. Kami pun mulai menabung dan perlahan mempersiapkan masa depan serta pernikahan yang kami impikan."
+      "title": "Tumbuh Bersama",
+      "date": "",
+      "photo": "/assets/couple/photo-2.webp",
+      "story": "Percakapan dan pertemuan sederhana perlahan tumbuh menjadi cerita yang semakin bermakna. Dari waktu ke waktu, kami menemukan rasa aman dan nyaman. Tanpa pernah direncanakan, rasa nyaman itu tumbuh menjadi cinta yang membawa kami pada kisah indah yang ingin terus kami jaga bersama."
     },
     {
-      "title": "Menuju Hari Bahagia",
-      "date": "DESEMBER 2025",
-      "story": "Niat baik yang telah lama kami simpan akhirnya menemukan waktunya. Dengan penuh keyakinan, Robi memberanikan diri menemui orang tua Tiara untuk menyampaikan keseriusan dan niat baiknya.\n\nSetelah itu, kedua keluarga mulai saling mengunjungi dan mengenal lebih dekat. Dengan doa serta restu dari orang-orang tercinta, perjalanan panjang kami akhirnya membawa kami menuju sebuah ikatan suci hari ketika kami berjanji untuk berjalan bersama dalam suka maupun duka, sebagai pasangan seumur hidup."
+      "title": "Janji Setia",
+      "date": "16 Agustus 2026",
+      "photo": "/assets/couple/photo-4.webp",
+      "story": "Barangkali, semesta memang memiliki caranya sendiri untuk mempertemukan dua hati, meski jarak 1.497 km sempat menjadi bagian dari perjalanan kami. Dengan memohon rida Allah SWT serta restu kedua orang tua dan keluarga, kami mantap melangkah ke jenjang yang lebih serius melalui prosesi lamaran pada Minggu, 16 Agustus 2026.\n\nKini, dengan keyakinan dan niat yang sama, kami sepakat untuk menyempurnakan separuh agama, mengikat janji suci, dan memulai perjalanan baru dalam satu ikatan pernikahan. Sebuah perjalanan panjang yang kami harapkan menjadi ibadah terindah, hingga akhir usia."
     }
   ],
   "event": {
     "akad": {
       "title": "Akad Nikah",
-      "date": "2026-09-03T09:00:00",
-      "dateLabel": "Kamis, 3 September 2026",
-      "time": "09.00 WIB",
-      "venue": "KUA Kecamatan Andir",
-      "address": "Jl. Elang V No. 25, Maleber, Kec. Andir, Kota Bandung, Jawa Barat 40184",
-      "mapsUrl": "https://maps.app.goo.gl/xetzZpNRfwyzq6cJ7?g_st=ac",
+      "date": "2027-01-05T08:00:00+07:00",
+      "dateLabel": "Selasa, 5 Januari 2027",
+      "time": "08.00 WIB – selesai",
+      "venue": "Yang Garden",
+      "address": "Jl. Pandanwangi, Cinunuk, Kec. Cileunyi, Kabupaten Bandung, Jawa Barat 40624",
+      "mapsUrl": "https://maps.app.goo.gl/re6yev5SKJYj3fLL6",
       "mapsEmbed": ""
     },
     "resepsi": {
       "title": "Resepsi",
-      "date": "2026-09-05T10:00:00",
-      "dateLabel": "Sabtu, 5 September 2026",
-      "time": "10.00 - 13.30 WIB",
-      "venue": "Hubdam III Siliwangi",
-      "address": "Jl. Moch. Toha No.055, Ciateul, Kec. Regol, Kota Bandung, Jawa Barat 40252",
-      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Hubdam+III+Siliwangi+Bandung",
-      "mapsEmbed": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7921.263788910059!2d107.6066144!3d-6.9345235999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e89b72429ef3%3A0xaf0cd315b57c9df1!2sHubdam%20III%20Siliwangi!5e0!3m2!1sid!2sid!4v1782062318634!5m2!1sid!2sid"
+      "date": "2027-01-05T11:00:00+07:00",
+      "dateLabel": "Selasa, 5 Januari 2027",
+      "time": "11.00–14.00 WIB",
+      "venue": "Yang Garden",
+      "address": "Jl. Pandanwangi, Cinunuk, Kec. Cileunyi, Kabupaten Bandung, Jawa Barat 40624",
+      "mapsUrl": "https://maps.app.goo.gl/re6yev5SKJYj3fLL6",
+      "mapsEmbed": ""
     }
   },
-  "countdownTarget": "2026-09-05T10:00:00",
+  "countdownTarget": "2027-01-05T08:00:00+07:00",
   "gallery": [
     {
-      "src": "/assets/gallery/prewed/gambar-1.jpg",
-      "caption": "Our Moment 01",
+      "src": "/assets/couple/photo-5.webp",
+      "caption": "Fynna & Pipin — momen 1",
       "span": "tall"
     },
     {
-      "src": "/assets/gallery/prewed/gambar-2.jpg",
-      "caption": "Our Moment 02",
+      "src": "/assets/couple/photo-3.webp",
+      "caption": "Fynna & Pipin — momen 2",
       "span": "tall"
     },
     {
-      "src": "/assets/gallery/prewed/gambar-3.jpg",
-      "caption": "Our Moment 03",
+      "src": "/assets/couple/photo-1.webp",
+      "caption": "Fynna & Pipin — momen 3",
       "span": "tall"
     },
     {
-      "src": "/assets/gallery/prewed/gambar-4.jpg",
-      "caption": "Our Moment 04",
+      "src": "/assets/couple/photo-4.webp",
+      "caption": "Fynna & Pipin — momen 4",
       "span": "wide"
     },
     {
-      "src": "/assets/gallery/prewed/gambar-5.jpg",
-      "caption": "Our Moment 05",
-      "span": "wide"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-6.jpg",
-      "caption": "Our Moment 06",
-      "span": "tall"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-7.jpg",
-      "caption": "Our Moment 07",
-      "span": "tall"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-8.jpg",
-      "caption": "Our Moment 08",
-      "span": "wide"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-9.jpg",
-      "caption": "Our Moment 09",
-      "span": "tall"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-10.jpg",
-      "caption": "Our Moment 10",
-      "span": "tall"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-11.jpg",
-      "caption": "Our Moment 11",
-      "span": "tall"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-12.jpg",
-      "caption": "Our Moment 12",
-      "span": "wide"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-13.jpg",
-      "caption": "Our Moment 13",
-      "span": "tall"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-14.jpg",
-      "caption": "Our Moment 14",
-      "span": "tall"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-15.jpg",
-      "caption": "Our Moment 15",
-      "span": "tall"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-16.jpg",
-      "caption": "Our Moment 16",
-      "span": "tall"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-18.jpg",
-      "caption": "Our Moment 18",
-      "span": "wide"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-19.jpg",
-      "caption": "Our Moment 19",
-      "span": "wide"
-    },
-    {
-      "src": "/assets/gallery/prewed/gambar-20.jpg",
-      "caption": "Our Moment 20",
+      "src": "/assets/couple/photo-2.webp",
+      "caption": "Fynna & Pipin — momen 5",
       "span": "tall"
     }
   ],
@@ -168,23 +101,24 @@
     "note": "Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Dan jika memberi adalah ungkapan tanda kasih, Anda dapat memberi kado secara cashless.",
     "banks": [
       {
-        "bank": "Bank BCA",
-        "number": "1450164174",
-        "holder": "Robi Firmansyah",
-        "logo": "/assets/payment/bca.png"
+        "bank": "BCA",
+        "number": "2832922120",
+        "holder": "Saufynna Ruhadyah"
       },
       {
-        "bank": "Bank Jago",
-        "number": "504469179343",
-        "holder": "Tiara Nurillatiffah",
-        "logo": "/assets/payment/jago.png"
+        "bank": "Mandiri",
+        "number": "1310017275878",
+        "holder": "Pipin Koswara"
       }
     ],
-    "qris": "/assets/payment/qris1.jpeg"
+    "qris": "",
+    "address": "Sukasari RT.04 RW.10, Kelurahan Pasirbiru, Kecamatan Cibiru, Kota Bandung"
   },
   "closing": {
     "message": "Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.",
     "gratitude": "With heartfelt gratitude, we invite your prayers and blessings"
   },
-  "music": "/assets/music/violin-wedding.mp3"
+  "music": "/assets/music/because-you-loved-me.mp3",
+  "musicTitle": "Because You Loved Me — Celine Dion",
+  "musicUrl": "https://www.youtube.com/watch?v=zvXr-rJXko8"
 }

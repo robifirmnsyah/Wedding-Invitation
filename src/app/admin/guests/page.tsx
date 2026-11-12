@@ -35,7 +35,7 @@ Kepada Yth. Bapak/Ibu/Saudara/i {nama},
 
 Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara Tasyakur Menjelang Pernikahan putra kami:
 
-*Robi Firmansyah & Tiara Nurillatiffah*
+*Saufynna Ruhadyah & Pipin Koswara*
 
 Silakan buka tautan undangan digital berikut untuk melihat detail acara:
 {link}
@@ -47,7 +47,7 @@ Atas perhatian dan kehadirannya, kami ucapkan terima kasih.
 Wassalamu'alaikum Warahmatullahi Wabarakatuh
 
 Hormat kami,
-*Kel. Bpk. Indra Gunawan & Ibu Tini Martini*`
+*Kel. Bpk. Dedi Supriadi & Ibu Yunengsih*`
   : `Assalamu'alaikum Warahmatullahi Wabarakatuh,
 
 Kepada Yth. Bapak/Ibu/Saudara/i {nama},
@@ -61,7 +61,7 @@ Merupakan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.
 
 Wassalamu'alaikum Warahmatullahi Wabarakatuh
 
-Tiara & Robi`;
+Fynna & Pipin`;
 
 function normalizeWhatsAppNumber(contact: string): string | null {
   const digits = contact.replace(/\D/g, "");
@@ -113,9 +113,9 @@ Atas perhatian dan keikhlasan doa Bapak/Ibu/Saudara/i, kami ucapkan terima kasih
 _Wassalamu'alaikum Warahmatullahi Wabarakatuh_
 
 *Hormat kami,*
-*Tiara & Robi*`;
+*Fynna & Pipin*`;
   } else {
-    const parentsName = side === "groom" ? "Indra Gunawan & Tini Martini" : "Enung Suherman & Amah";
+    const parentsName = side === "groom" ? "Dedi Supriadi & Yunengsih" : "Yaya Cahyana & Wiangsih";
     return `_Assalamu'alaikum Warahmatullahi Wabarakatuh_
 
 Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i *${guestName}* untuk menghadiri acara pernikahan putra-putri kami.
@@ -894,7 +894,7 @@ function GuestsContent() {
                   Pengantin
                 </div>
                 <div className="mt-0.5 text-xs text-slate-500">
-                  Format dari Tiara & Robi
+                  Format dari Fynna & Pipin
                 </div>
               </button>
 

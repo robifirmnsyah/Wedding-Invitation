@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { createAdminSession, sessionCookie } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
@@ -16,21 +17,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const password = (body.password ?? "").trim();
+  const password = typeof body.password === "string" ? body.password : "";
   if (!password) {
     return NextResponse.json(
       { error: "Password wajib diisi." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) {
+  const adminPassword = process.env.FYNNA_PIPIN_ADMIN_PASSWORD;
+  if (
+    !adminPassword ||
+    !process.env.FYNNA_PIPIN_SESSION_SECRET ||
+    process.env.FYNNA_PIPIN_SESSION_SECRET.length < 32
+  ) {
     // Fail-safe: if no admin password is configured, deny all access
     console.error("ADMIN_PASSWORD environment variable is not set.");
     return NextResponse.json(
       { error: "Server configuration error." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -46,16 +51,13 @@ export async function POST(req: Request) {
   }
 
   // Generate a session token
-  const sessionToken = crypto.randomBytes(32).toString("hex");
+  const sessionToken = await createAdminSession();
 
   const res = NextResponse.json({ success: true });
 
   // Set HttpOnly, Secure, SameSite cookie
   // __Host- prefix requires HTTPS; use plain name in development
-  const cookieName =
-    process.env.NODE_ENV === "production"
-      ? "__Host-admin_session"
-      : "admin_session";
+  const cookieName = sessionCookie;
 
   res.cookies.set(cookieName, sessionToken, {
     httpOnly: true,

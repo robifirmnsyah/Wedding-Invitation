@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/require-admin";
 import { NextResponse } from "next/server";
 import { parseCsv } from "@/lib/csv";
 import { importGuests } from "@/lib/google-sheets";
@@ -5,6 +6,8 @@ import { importGuests } from "@/lib/google-sheets";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  if (!(await isAdmin()))
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   let body: { side?: string; csv?: string };
   try {
     body = await req.json();
@@ -21,7 +24,10 @@ export async function POST(req: Request) {
   // Parse CSV
   let rows = parseCsv(csv);
   if (rows.length < 2) {
-    return NextResponse.json({ error: "CSV tidak valid atau kosong." }, { status: 400 });
+    return NextResponse.json(
+      { error: "CSV tidak valid atau kosong." },
+      { status: 400 },
+    );
   }
 
   // Find header indices
@@ -34,12 +40,23 @@ export async function POST(req: Request) {
   const idxContact = headers.indexOf("contact");
 
   if (idxName === -1 || idxCategory === -1) {
-    return NextResponse.json({ error: "Header CSV harus mengandung 'name' dan 'category'." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Header CSV harus mengandung 'name' dan 'category'." },
+      { status: 400 },
+    );
   }
 
   const dataRows = rows.slice(1);
 
-  const guests: { unique_code?: string; name: string; category: string; pax: number; contact_type: string; contact: string; side: "bride" | "groom" }[] = [];
+  const guests: {
+    unique_code?: string;
+    name: string;
+    category: string;
+    pax: number;
+    contact_type: string;
+    contact: string;
+    side: "bride" | "groom";
+  }[] = [];
   const errors: { line: number; message: string }[] = [];
 
   for (let i = 0; i < dataRows.length; i++) {
@@ -50,8 +67,12 @@ export async function POST(req: Request) {
     const name = (row[idxName] || "").trim().slice(0, 100);
     const categoryName = (row[idxCategory] || "").trim();
     const paxStr = idxPax !== -1 ? row[idxPax] : "";
-    const contact_type = idxContactType !== -1 ? (row[idxContactType] || "WhatsApp").trim().slice(0, 50) : "WhatsApp";
-    const contact = idxContact !== -1 ? (row[idxContact] || "").trim().slice(0, 100) : "";
+    const contact_type =
+      idxContactType !== -1
+        ? (row[idxContactType] || "WhatsApp").trim().slice(0, 50)
+        : "WhatsApp";
+    const contact =
+      idxContact !== -1 ? (row[idxContact] || "").trim().slice(0, 100) : "";
 
     if (!name || !categoryName) {
       errors.push({ line: lineNum, message: "Nama dan Kategori wajib diisi." });
@@ -66,7 +87,15 @@ export async function POST(req: Request) {
       }
     }
 
-    guests.push({ unique_code, name, category: categoryName, pax, contact_type, contact, side });
+    guests.push({
+      unique_code,
+      name,
+      category: categoryName,
+      pax,
+      contact_type,
+      contact,
+      side,
+    });
   }
 
   const result = await importGuests(guests);

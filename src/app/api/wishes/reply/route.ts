@@ -18,15 +18,23 @@ export async function POST(req: Request) {
   if (!wishId || !name || !message) {
     return NextResponse.json(
       { error: "Nama dan balasan wajib diisi." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  const reply = await addReply({ wishId, name, message });
+  let reply;
+  try {
+    reply = await addReply({ wishId, name, message });
+  } catch {
+    return NextResponse.json(
+      { error: "Balasan belum tersimpan." },
+      { status: 503 },
+    );
+  }
   if (!reply) {
     return NextResponse.json(
       { error: "Ucapan tidak ditemukan." },
-      { status: 404 }
+      { status: 404 },
     );
   }
 

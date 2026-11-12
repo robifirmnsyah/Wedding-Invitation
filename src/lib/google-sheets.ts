@@ -3,9 +3,9 @@ import { google, sheets_v4 } from "googleapis";
 
 export type Side = "bride" | "groom";
 
-const GUESTS_SHEET = "Web Invitation Active";
-const CATEGORIES_SHEET = "Web Categories Active";
-const WISHES_SHEET = "Web Wishes Active";
+const GUESTS_SHEET = "Fynna Pipin Guests";
+const CATEGORIES_SHEET = "Fynna Pipin Categories";
+const WISHES_SHEET = "Fynna Pipin Wishes";
 const GUEST_HEADERS = [
   "Kode Undangan", "Nama", "Jumlah", "Kategori", "Pihak", "Tipe Kontak", "Kontak", "Status RSVP", "Ucapan", "Dibuat Pada", "Diperbarui Pada",
 ];
@@ -45,7 +45,7 @@ function requiredEnv(name: string) {
 }
 
 function getSheets(): sheets_v4.Sheets {
-  const rawPrivateKey = requiredEnv("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY");
+  const rawPrivateKey = requiredEnv("FYNNA_PIPIN_GOOGLE_PRIVATE_KEY");
   const private_key = rawPrivateKey
     .replace(/^"(.*)"$/, "$1")
     .replace(/^'(.*)'$/, "$1")
@@ -53,7 +53,7 @@ function getSheets(): sheets_v4.Sheets {
 
   const auth = new google.auth.GoogleAuth({
     credentials: {
-      client_email: requiredEnv("GOOGLE_SERVICE_ACCOUNT_EMAIL"),
+      client_email: requiredEnv("FYNNA_PIPIN_GOOGLE_EMAIL"),
       private_key,
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
@@ -62,7 +62,7 @@ function getSheets(): sheets_v4.Sheets {
 }
 
 function getSpreadsheetId() {
-  return requiredEnv("GOOGLE_SHEETS_SPREADSHEET_ID");
+  return requiredEnv("FYNNA_PIPIN_SPREADSHEET_ID");
 }
 
 function stringAt(row: string[], index: number) {
@@ -122,7 +122,7 @@ async function updateValues(sheetName: string, range: string, values: (string | 
   await getSheets().spreadsheets.values.update({
     spreadsheetId: getSpreadsheetId(),
     range: `'${sheetName}'!${range}`,
-    valueInputOption: "USER_ENTERED",
+    valueInputOption: "RAW",
     requestBody: { values },
   });
 }
@@ -186,7 +186,7 @@ export async function createGuest(input: {
   };
   guest.unique_code = guest.id;
   await getSheets().spreadsheets.values.append({
-    spreadsheetId: getSpreadsheetId(), range: `'${GUESTS_SHEET}'!A:K`, valueInputOption: "USER_ENTERED", insertDataOption: "INSERT_ROWS",
+    spreadsheetId: getSpreadsheetId(), range: `'${GUESTS_SHEET}'!A:K`, valueInputOption: "RAW", insertDataOption: "INSERT_ROWS",
     requestBody: { values: toGuestRow(guest) },
   });
   return guest;
@@ -240,7 +240,7 @@ export async function createCategory(input: { name: string; side: Side; color: s
   const id = crypto.randomUUID();
   const category: SheetCategory = { id, name, side: input.side, color: input.color || "slate", row: 0 };
   await getSheets().spreadsheets.values.append({
-    spreadsheetId: getSpreadsheetId(), range: `'${CATEGORIES_SHEET}'!A:D`, valueInputOption: "USER_ENTERED", insertDataOption: "INSERT_ROWS",
+    spreadsheetId: getSpreadsheetId(), range: `'${CATEGORIES_SHEET}'!A:D`, valueInputOption: "RAW", insertDataOption: "INSERT_ROWS",
     requestBody: { values: [[category.id, category.name, category.side, category.color]] },
   });
   return category;
@@ -365,7 +365,7 @@ export async function appendPublicWish(wish: any) {
   await getSheets().spreadsheets.values.append({
     spreadsheetId: getSpreadsheetId(),
     range: `'${WISHES_SHEET}'!A:G`,
-    valueInputOption: "USER_ENTERED",
+    valueInputOption: "RAW",
     insertDataOption: "INSERT_ROWS",
     requestBody: { values: [rowData] },
   });
