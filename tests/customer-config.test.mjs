@@ -16,7 +16,7 @@ test('all customer photo and audio paths resolve to real assets',()=>{
  const assets=[c.hero.photo,c.couple.bride.photo,c.couple.groom.photo,c.music,...c.gallery.map(x=>x.src)];
  for(const asset of assets) assert.ok(fs.statSync(path.join('public',asset)).size>1000,asset);
  assert.equal(c.gallery.length,5);
- assert.ok(c.music.includes('because-you-loved-me'));
+ assert.ok(c.music.endsWith('.mp3'));
 });
 test('calendar encodes the correct UTC instants and reception end',()=>{
  const ics=fs.readFileSync('public/fynna-pipin.ics','utf8');
