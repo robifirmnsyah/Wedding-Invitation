@@ -843,6 +843,55 @@
   .m-reveal-next { bottom: 8px; z-index: 8; }
 }
 
+/* Warm stationery panels separate practical details from the velvet backdrop. */
+.m-events article,
+.m-bank,
+.m-delivery,
+.m-wishes article {
+  color: #47232c;
+  background: linear-gradient(135deg, #fff8eb, #eddfc8);
+  border: 1px solid #c8a775;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px #10040b40, inset 0 0 0 5px #fff8eb66;
+  overflow-wrap: anywhere;
+}
+.m-events article {
+  padding: 30px 24px 34px;
+  margin-bottom: 24px;
+  border-radius: 100px 100px 18px 18px;
+}
+.m-events article + article { border-top: 1px solid #c8a775; }
+.m-events article::before { display: none; }
+.m-events h3 { color: #632e3c; font-size: clamp(40px, 10vw, 54px); }
+.m-events h4 { color: #47232c; margin-top: 24px; }
+.m-events p { color: #593c3e; }
+.m-events .m-event-icon { color: #96703e; }
+.m-bank-list { display: grid; gap: 18px; margin-top: 30px; }
+.m-bank { padding: 28px 22px; }
+.m-bank-name { color: #77522d; }
+.m-bank-number { color: #47232c; font-size: clamp(22px, 6vw, 28px); letter-spacing: .06em; }
+.m-bank p { color: #593c3e; }
+.m-delivery { margin-top: 20px; padding: 26px 22px; }
+.m-delivery h3 { color: #632e3c; }
+.m-delivery p { color: #593c3e; }
+.m-events .m-button,
+.m-bank .m-button,
+.m-delivery .m-button {
+  background: #542433;
+  color: #fff4e2;
+  border-color: #542433;
+  border-radius: 7px;
+  min-height: 44px;
+  font-size: 11px;
+}
+.m-events .m-button:hover,
+.m-bank .m-button:hover,
+.m-delivery .m-button:hover { background: #713b49; }
+.m-wishes { display: grid; gap: 14px; padding: 4px 6px 14px 0; }
+.m-wishes article { padding: 20px 22px; text-align: left; }
+.m-wishes h3 { color: #542433; font-size: 22px; line-height: 1.35; }
+.m-wishes p { color: #593c3e; font-size: 15px; line-height: 1.7; }
+
 /* A viewport layer keeps the textile continuous without visible tile seams. */
 .m-main {
   isolation: isolate;
