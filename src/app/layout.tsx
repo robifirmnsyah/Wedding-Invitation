@@ -3,6 +3,7 @@ import {
   Amiri,
   Cormorant_Garamond,
   Great_Vibes,
+  Playfair_Display,
   Poppins,
 } from "next/font/google";
 import config, { isTasyakur } from "@/lib/config";
@@ -15,6 +16,13 @@ const display = Cormorant_Garamond({
   weight: ["500", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-display",
+  display: "swap",
+});
+
+const serifNum = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-serif-num",
   display: "swap",
 });
 
@@ -99,7 +107,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${display.variable} ${body.variable} ${arabic.variable} ${accent.variable}`}
+      className={`${display.variable} ${body.variable} ${arabic.variable} ${accent.variable} ${serifNum.variable}`}
     >
       <body className="bg-ivory-50 font-body text-ink antialiased">
         {children}
