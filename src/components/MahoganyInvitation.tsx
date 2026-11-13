@@ -473,50 +473,75 @@ export function InvitationShell() {
                 untuk merayakan pernikahan kami.
               </p>
               <div className="m-couple">
-                {(["bride", "groom"] as const).map((key, index) => {
-                  const person = config.couple[key];
-                  return (
-                    <article key={key} className="m-person">
-                      <div className={`m-portrait m-portrait-${key}`}>
-                        <div className="m-portrait-window">
-                          <Image
-                            src={person.photo}
-                            alt={person.fullName}
-                            fill
-                            sizes="250px"
-                          />
-                        </div>
-                        <Image
-                          src={`${art}portrait-frame.webp`}
-                          alt=""
-                          fill
-                          sizes="300px"
-                          className="m-frame"
-                        />
-                      </div>
-                      <div className="m-person-copy">
-                        <p className="m-eyebrow">
-                          {index === 0 ? "THE BRIDE" : "THE GROOM"}
-                        </p>
-                        <h3>{person.fullName}</h3>
-                        <p>{person.parents}</p>
-                        <a
-                          className="m-text-link"
-                          href={`https://www.instagram.com/${person.instagram}/`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          @{person.instagram} ↗
-                        </a>
-                      </div>
-                      {index === 0 && (
-                        <span className="m-ampersand" aria-hidden="true">
-                          &
-                        </span>
-                      )}
-                    </article>
-                  );
-                })}
+                <article className="m-person m-person-bride">
+                  <div className="m-portrait m-portrait-bride">
+                    <div className="m-portrait-window">
+                      <Image
+                        src={config.couple.bride.photo}
+                        alt={config.couple.bride.fullName}
+                        fill
+                        sizes="250px"
+                      />
+                    </div>
+                    <Image
+                      src={`${art}portrait-frame.webp`}
+                      alt=""
+                      fill
+                      sizes="300px"
+                      className="m-frame"
+                    />
+                  </div>
+                  <div className="m-person-copy">
+                    <p className="m-eyebrow">THE BRIDE</p>
+                    <h3>{config.couple.bride.fullName}</h3>
+                    <p>{config.couple.bride.parents}</p>
+                    <a
+                      className="m-text-link"
+                      href={`https://www.instagram.com/${config.couple.bride.instagram}/`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      @{config.couple.bride.instagram} ↗
+                    </a>
+                  </div>
+                </article>
+
+                <div className="m-couple-ampersand" aria-hidden="true">
+                  <span>&</span>
+                </div>
+
+                <article className="m-person m-person-groom">
+                  <div className="m-portrait m-portrait-groom">
+                    <div className="m-portrait-window">
+                      <Image
+                        src={config.couple.groom.photo}
+                        alt={config.couple.groom.fullName}
+                        fill
+                        sizes="250px"
+                      />
+                    </div>
+                    <Image
+                      src={`${art}portrait-frame.webp`}
+                      alt=""
+                      fill
+                      sizes="300px"
+                      className="m-frame"
+                    />
+                  </div>
+                  <div className="m-person-copy">
+                    <p className="m-eyebrow">THE GROOM</p>
+                    <h3>{config.couple.groom.fullName}</h3>
+                    <p>{config.couple.groom.parents}</p>
+                    <a
+                      className="m-text-link"
+                      href={`https://www.instagram.com/${config.couple.groom.instagram}/`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      @{config.couple.groom.instagram} ↗
+                    </a>
+                  </div>
+                </article>
               </div>
               <details className="m-full-verse">
                 <summary>QS. Ar-Rum: 21</summary>
@@ -646,6 +671,9 @@ export function InvitationShell() {
               title="Our Memories"
               light
             >
+              <p className="m-gallery-lead">
+                Setiap momen adalah bagian dari cerita kita.
+              </p>
               <div className="m-gallery">
                 {config.gallery.map((photo, index) => (
                   <button
@@ -659,12 +687,14 @@ export function InvitationShell() {
                       fill
                       sizes="(min-width: 1024px) 250px, 50vw"
                     />
+                    {photo.caption && (
+                      <span className="m-gallery-caption">
+                        {photo.caption}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
-              <p className="m-small">
-                Setiap momen adalah bagian dari cerita kita.
-              </p>
             </Section>
             <Wishes name={guest.name} code={guest.code} />
             <section className="m-closing">
@@ -733,6 +763,11 @@ export function InvitationShell() {
               height={1600}
               sizes="90vw"
             />
+            {config.gallery[selectedPhoto].caption && (
+              <p className="m-lightbox-caption">
+                {config.gallery[selectedPhoto].caption}
+              </p>
+            )}
             <div className="m-lightbox-controls">
               <button
                 onClick={() =>

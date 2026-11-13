@@ -387,22 +387,29 @@
   display: grid;
   grid-template-columns: 48% 52%;
   align-items: center;
-  margin: 0 0 55px;
+  margin: 0;
   text-align: left;
+  position: relative;
+  z-index: 1;
 }
-.m-person:nth-child(2) {
+.m-person-groom,
+.m-person:nth-of-type(2) {
   direction: rtl;
   text-align: right;
-  margin-top: 10px;
+  margin-top: 0;
 }
-.m-person:nth-child(2) > * {
+.m-person-groom > *,
+.m-person:nth-of-type(2) > * {
   direction: ltr;
 }
 .m-person-copy {
-  padding-left: 10px;
+  padding-left: 12px;
+  position: relative;
+  z-index: 2;
 }
-.m-person:nth-child(2) .m-person-copy {
-  padding: 0 10px 0 0;
+.m-person-groom .m-person-copy,
+.m-person:nth-of-type(2) .m-person-copy {
+  padding: 0 12px 0 0;
 }
 .m-person .m-eyebrow {
   font-size: 8px;
@@ -413,12 +420,12 @@
     33px/1.1 var(--font-accent),
     cursive;
   color: var(--m-ivory);
-  margin: 12px 0;
+  margin: 10px 0 8px;
 }
 .m-person-copy > p:not(.m-eyebrow) {
   font-size: 14px;
   line-height: 1.5;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .m-person .m-portrait {
   width: 100%;
@@ -426,12 +433,23 @@
   aspect-ratio: 0.76;
   margin: 0;
 }
-.m-person .m-ampersand {
-  position: absolute;
-  bottom: -55px;
-  left: 46%;
-  font-size: 43px;
-  margin: 0;
+.m-couple-ampersand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 14px auto 18px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  clear: both;
+}
+.m-couple-ampersand span {
+  font-family: var(--font-accent), cursive;
+  font-size: clamp(48px, 12vw, 62px);
+  color: var(--m-gold);
+  line-height: 1;
+  display: inline-block;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 .m-full-verse {
   position: relative;
@@ -597,7 +615,17 @@
   width: 18px;
 }
 #galeri {
-  padding: 45px 20px 65px;
+  padding: 45px 20px 120px;
+}
+.m-gallery-lead {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 15px;
+  color: var(--m-ivory);
+  opacity: 0.9;
+  text-align: center;
+  margin: -10px auto 26px;
+  font-style: italic;
+  letter-spacing: 0.02em;
 }
 .m-gallery {
   gap: 7px;
@@ -605,6 +633,40 @@
 .m-gallery button {
   border-radius: 0;
   border: 1px solid #ddc7a644;
+  position: relative;
+  overflow: hidden;
+}
+.m-gallery-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 6px 8px;
+  background: linear-gradient(to top, rgba(24, 11, 16, 0.85), transparent);
+  color: var(--m-ivory);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 11px;
+  font-style: italic;
+  text-align: center;
+  pointer-events: none;
+  line-height: 1.3;
+}
+.m-small {
+  font-size: 13px !important;
+  color: var(--m-ivory);
+  opacity: 0.9;
+  text-align: center;
+  margin-top: 24px !important;
+  margin-bottom: 24px !important;
+  display: block;
+}
+.m-lightbox-caption {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 15px;
+  color: var(--m-ivory);
+  text-align: center;
+  margin: 12px auto 6px;
+  font-style: italic;
 }
 .m-bank-list {
   display: block;
@@ -1074,12 +1136,17 @@
   line-height: 1.6;
   white-space: pre-wrap;
 }
+#mempelai,
+#tanggal,
+#acara,
+#cerita,
+#galeri,
 #hadiah,
 #ucapan {
-  padding-bottom: 96px;
+  padding-bottom: 110px;
 }
 .m-content {
-  padding-bottom: 90px;
+  padding-bottom: 110px;
 }
 
 /* A viewport layer keeps the textile continuous without visible tile seams. */
