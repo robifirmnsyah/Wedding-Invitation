@@ -552,36 +552,46 @@
   position: relative;
   display: flex;
   justify-content: center;
-  margin: 38px 0 55px;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 40px auto 55px;
+  max-width: 360px;
 }
 .m-keepsakes figure {
-  width: 46%;
-  margin: 0 -5px;
+  width: 48%;
+  margin: 0;
   background: #f3ead9;
-  padding: 7px 7px 0;
-  box-shadow: 0 6px 20px #0006;
-  transform: rotate(-10deg);
+  padding: 8px 8px 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transform: rotate(-6deg);
+  border-radius: 2px;
 }
 .m-keepsakes figure:nth-child(2) {
-  transform: rotate(9deg) translateY(15px);
+  transform: rotate(6deg) translateY(10px);
 }
 .m-keepsakes img {
   width: 100%;
   height: auto;
-  aspect-ratio: 0.8;
+  aspect-ratio: 0.82;
   object-fit: cover;
+  display: block;
 }
 .m-keepsakes figcaption {
   text-align: center;
   color: #503039;
-  font:
-    19px/1.9 var(--font-accent),
-    cursive;
+  font-family: var(--font-accent), cursive;
+  font-size: 20px;
+  line-height: 1.4;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  white-space: nowrap;
 }
 .m-keepsakes > span {
   position: absolute;
-  bottom: -12px;
-  left: 45%;
+  top: -16px;
+  left: 50%;
+  bottom: auto;
+  transform: translateX(-50%);
   width: 42px;
   height: 42px;
   display: grid;
@@ -590,7 +600,11 @@
   border: 3px double #9d5a63;
   background: #531a2a;
   color: #e2bdb2;
-  font-size: 12px;
+  font-size: 13px;
+  font-family: var(--font-display), serif;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  z-index: 5;
 }
 .m-timeline {
   padding-left: 25px;
