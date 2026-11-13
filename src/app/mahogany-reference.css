@@ -12,6 +12,8 @@
   --m-muted: #e1cdb9;
   background: #180b10;
   font-family: var(--font-display), Georgia, serif;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 .m-main {
   background: #210d13;

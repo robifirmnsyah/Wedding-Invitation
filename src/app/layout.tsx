@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import {
   Amiri,
-  Cormorant_Garamond,
   Great_Vibes,
+  Lora,
   Playfair_Display,
   Poppins,
 } from "next/font/google";
@@ -11,9 +11,9 @@ import "./globals.css";
 import "./mahogany.css";
 import "./mahogany-reference.css";
 
-const display = Cormorant_Garamond({
+const display = Lora({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-display",
   display: "swap",
