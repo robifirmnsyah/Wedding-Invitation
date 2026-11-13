@@ -3,9 +3,9 @@ import { google, sheets_v4 } from "googleapis";
 
 export type Side = "bride" | "groom";
 
-const GUESTS_SHEET = "Fynna Pipin Guests";
-const CATEGORIES_SHEET = "Fynna Pipin Categories";
-const WISHES_SHEET = "Fynna Pipin Wishes";
+const GUESTS_SHEET = "Web Invitation";
+const CATEGORIES_SHEET = "Web Categories";
+const WISHES_SHEET = "Web Wishes";
 const GUEST_HEADERS = [
   "Kode Undangan", "Nama", "Jumlah", "Kategori", "Pihak", "Tipe Kontak", "Kontak", "Status RSVP", "Ucapan", "Dibuat Pada", "Diperbarui Pada",
 ];
