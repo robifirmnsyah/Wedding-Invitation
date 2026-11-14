@@ -517,6 +517,22 @@ export async function updatePublicWishReplies(wishId: string, replies: any[]) {
   await updateValues(WISHES_SHEET, `G${wish.row}:G${wish.row}`, [[JSON.stringify(replies)]]);
 }
 
+export async function getSpreadsheetDetails() {
+  const sheets = getSheets();
+  const spreadsheetId = getSpreadsheetId();
+  const meta = await sheets.spreadsheets.get({ spreadsheetId });
+  return {
+    title: meta.data.properties?.title,
+    spreadsheetId,
+    sheets: (meta.data.sheets ?? []).map((s) => ({
+      id: s.properties?.sheetId,
+      title: s.properties?.title,
+      rowCount: s.properties?.gridProperties?.rowCount,
+      columnCount: s.properties?.gridProperties?.columnCount,
+    })),
+  };
+}
+
 export function getSpreadsheetInfo() {
   return {
     spreadsheetId: getSpreadsheetId(),
