@@ -88,16 +88,21 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [categoryBreakdown, setCategoryBreakdown] = useState<CategoryBreakdown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/stats")
       .then((r) => r.json())
       .then((d) => {
+        if (d.error) setErrorMsg(d.error);
         setStats(d.stats ?? null);
         setCategoryBreakdown(d.categoryBreakdown ?? []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        setErrorMsg(err instanceof Error ? err.message : "Gagal memuat data.");
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -330,9 +335,13 @@ export default function AdminDashboardPage() {
             )}
           </>
         ) : (
-          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-            <p className="text-slate-500">
-              Gagal memuat data. Pastikan Environment Variables Google Sheets sudah terkonfigurasi di Vercel.
+          <div className="rounded-2xl border border-rose-200 bg-rose-50/70 p-8 text-center shadow-sm max-w-2xl mx-auto">
+            <h3 className="font-semibold text-rose-800 text-base">
+              Gagal Memuat Data Google Spreadsheet
+            </h3>
+            <p className="mt-2 text-sm text-rose-700 leading-relaxed">
+              {errorMsg ||
+                "Pastikan spreadsheet baru sudah di-share (Editor) ke email service account Google."}
             </p>
           </div>
         )}

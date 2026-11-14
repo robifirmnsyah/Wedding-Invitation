@@ -145,6 +145,7 @@ function GuestsContent() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterRsvp, setFilterRsvp] = useState("");
@@ -174,16 +175,22 @@ function GuestsContent() {
 
   const fetchData = useCallback(() => {
     setLoading(true);
+    setFetchError("");
     Promise.all([
       fetch(`/api/admin/guests?side=${side}`).then((r) => r.json()),
       fetch(`/api/admin/categories?side=${side}`).then((r) => r.json()),
     ])
       .then(([gData, cData]) => {
+        if (gData.error) setFetchError(gData.error);
+        else if (cData.error) setFetchError(cData.error);
         setGuests(gData.guests ?? []);
         setCategories(cData.categories ?? []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        setFetchError(err instanceof Error ? err.message : "Gagal memuat data.");
+        setLoading(false);
+      });
   }, [side]);
 
   useEffect(() => {
@@ -438,6 +445,13 @@ function GuestsContent() {
             </button>
           </div>
         </div>
+
+        {fetchError && (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+            <span className="font-semibold">Perhatian: </span>
+            {fetchError}
+          </div>
+        )}
 
         {/* Compact Filters & Search */}
         <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm sm:p-4">

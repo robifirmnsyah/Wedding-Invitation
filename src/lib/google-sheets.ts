@@ -45,7 +45,9 @@ function requiredEnv(name: string) {
 }
 
 function getSheets(): sheets_v4.Sheets {
-  const rawPrivateKey = requiredEnv("FYNNA_PIPIN_GOOGLE_PRIVATE_KEY");
+  const rawPrivateKey =
+    process.env.SAUFYNNA_PIPIN_GOOGLE_PRIVATE_KEY ||
+    requiredEnv("FYNNA_PIPIN_GOOGLE_PRIVATE_KEY");
   const private_key = rawPrivateKey
     .replace(/^"(.*)"$/, "$1")
     .replace(/^'(.*)'$/, "$1")
@@ -53,7 +55,9 @@ function getSheets(): sheets_v4.Sheets {
 
   const auth = new google.auth.GoogleAuth({
     credentials: {
-      client_email: requiredEnv("FYNNA_PIPIN_GOOGLE_EMAIL"),
+      client_email:
+        process.env.SAUFYNNA_PIPIN_GOOGLE_EMAIL ||
+        requiredEnv("FYNNA_PIPIN_GOOGLE_EMAIL"),
       private_key,
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
@@ -62,7 +66,104 @@ function getSheets(): sheets_v4.Sheets {
 }
 
 function getSpreadsheetId() {
-  return requiredEnv("FYNNA_PIPIN_SPREADSHEET_ID");
+  const custom = process.env.SAUFYNNA_PIPIN_SPREADSHEET_ID?.trim();
+  if (custom) return custom;
+  // User's dedicated spreadsheet for Saufynna & Pipin
+  const hardcoded = "1q7Jw4uXoSPv1Gqw9EP8W7dBj__5LIOPRPi7xFRc4tX4";
+  return hardcoded || requiredEnv("FYNNA_PIPIN_SPREADSHEET_ID");
+}
+
+let initialized = false;
+async function ensureSheetsInitialized() {
+  if (initialized) return;
+  try {
+    const sheets = getSheets();
+    const spreadsheetId = getSpreadsheetId();
+    const meta = await sheets.spreadsheets.get({ spreadsheetId });
+    const existingTitles = new Set(
+      (meta.data.sheets ?? []).map((s) => s.properties?.title).filter(Boolean),
+    );
+
+    const requests: sheets_v4.Schema$Request[] = [];
+    if (!existingTitles.has(GUESTS_SHEET)) {
+      requests.push({ addSheet: { properties: { title: GUESTS_SHEET } } });
+    }
+    if (!existingTitles.has(CATEGORIES_SHEET)) {
+      requests.push({ addSheet: { properties: { title: CATEGORIES_SHEET } } });
+    }
+    if (!existingTitles.has(WISHES_SHEET)) {
+      requests.push({ addSheet: { properties: { title: WISHES_SHEET } } });
+    }
+
+    if (requests.length > 0) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: { requests },
+      });
+    }
+
+    const headerUpdates: sheets_v4.Schema$ValueRange[] = [];
+    if (!existingTitles.has(GUESTS_SHEET)) {
+      headerUpdates.push({
+        range: `'${GUESTS_SHEET}'!A1:K1`,
+        values: [GUEST_HEADERS],
+      });
+    }
+    if (!existingTitles.has(CATEGORIES_SHEET)) {
+      headerUpdates.push({
+        range: `'${CATEGORIES_SHEET}'!A1:D1`,
+        values: [CATEGORY_HEADERS],
+      });
+    }
+    if (!existingTitles.has(WISHES_SHEET)) {
+      headerUpdates.push({
+        range: `'${WISHES_SHEET}'!A1:G1`,
+        values: [
+          ["ID", "Nama", "Ucapan", "Kehadiran", "Verified", "Dibuat Pada", "Replies"],
+        ],
+      });
+    }
+
+    if (headerUpdates.length > 0) {
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          valueInputOption: "RAW",
+          data: headerUpdates,
+        },
+      });
+    }
+
+    initialized = true;
+  } catch (e) {
+    console.error("Auto-init sheets notice:", e);
+  }
+}
+
+function handleSheetError(error: unknown, sheetName?: string): never {
+  const msg = error instanceof Error ? error.message : String(error);
+  const email =
+    process.env.SAUFYNNA_PIPIN_GOOGLE_EMAIL ||
+    process.env.FYNNA_PIPIN_GOOGLE_EMAIL ||
+    "service account";
+  const id = getSpreadsheetId();
+
+  if (
+    msg.includes("The caller does not have permission") ||
+    msg.includes("403") ||
+    msg.includes("Requested entity was not found") ||
+    msg.includes("404")
+  ) {
+    throw new Error(
+      `Tidak dapat mengakses Google Spreadsheet (${id}). Pastikan spreadsheet sudah di-share (akses Editor) ke email service account: ${email}`,
+    );
+  }
+  if (msg.includes("Unable to parse range")) {
+    throw new Error(
+      `Tab '${sheetName || GUESTS_SHEET}' belum ditemukan di spreadsheet (${id}).`,
+    );
+  }
+  throw error instanceof Error ? error : new Error(String(error));
 }
 
 function stringAt(row: string[], index: number) {
@@ -111,20 +212,36 @@ function rowToGuest(row: string[], rowIndex: number, categories: SheetCategory[]
 }
 
 async function getValues(sheetName: string, range: string) {
-  const response = await getSheets().spreadsheets.values.get({
-    spreadsheetId: getSpreadsheetId(),
-    range: `'${sheetName}'!${range}`,
-  });
-  return (response.data.values ?? []).map((row) => row.map((cell) => String(cell ?? "")));
+  await ensureSheetsInitialized();
+  try {
+    const response = await getSheets().spreadsheets.values.get({
+      spreadsheetId: getSpreadsheetId(),
+      range: `'${sheetName}'!${range}`,
+    });
+    return (response.data.values ?? []).map((row) =>
+      row.map((cell) => String(cell ?? "")),
+    );
+  } catch (err) {
+    handleSheetError(err, sheetName);
+  }
 }
 
-async function updateValues(sheetName: string, range: string, values: (string | number)[][]) {
-  await getSheets().spreadsheets.values.update({
-    spreadsheetId: getSpreadsheetId(),
-    range: `'${sheetName}'!${range}`,
-    valueInputOption: "RAW",
-    requestBody: { values },
-  });
+async function updateValues(
+  sheetName: string,
+  range: string,
+  values: (string | number)[][],
+) {
+  await ensureSheetsInitialized();
+  try {
+    await getSheets().spreadsheets.values.update({
+      spreadsheetId: getSpreadsheetId(),
+      range: `'${sheetName}'!${range}`,
+      valueInputOption: "RAW",
+      requestBody: { values },
+    });
+  } catch (err) {
+    handleSheetError(err, sheetName);
+  }
 }
 
 export async function listCategories(side?: Side): Promise<SheetCategory[]> {
@@ -185,10 +302,18 @@ export async function createGuest(input: {
     side: category.side, guest_categories: { name: category.name }, row: 0,
   };
   guest.unique_code = guest.id;
-  await getSheets().spreadsheets.values.append({
-    spreadsheetId: getSpreadsheetId(), range: `'${GUESTS_SHEET}'!A:K`, valueInputOption: "RAW", insertDataOption: "INSERT_ROWS",
-    requestBody: { values: toGuestRow(guest) },
-  });
+  await ensureSheetsInitialized();
+  try {
+    await getSheets().spreadsheets.values.append({
+      spreadsheetId: getSpreadsheetId(),
+      range: `'${GUESTS_SHEET}'!A:K`,
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: { values: toGuestRow(guest) },
+    });
+  } catch (err) {
+    handleSheetError(err, GUESTS_SHEET);
+  }
   return guest;
 }
 
@@ -239,10 +364,18 @@ export async function createCategory(input: { name: string; side: Side; color: s
   if (categories.some((category) => category.name.toLowerCase() === name.toLowerCase())) throw new Error("Kategori dengan nama ini sudah ada.");
   const id = crypto.randomUUID();
   const category: SheetCategory = { id, name, side: input.side, color: input.color || "slate", row: 0 };
-  await getSheets().spreadsheets.values.append({
-    spreadsheetId: getSpreadsheetId(), range: `'${CATEGORIES_SHEET}'!A:D`, valueInputOption: "RAW", insertDataOption: "INSERT_ROWS",
-    requestBody: { values: [[category.id, category.name, category.side, category.color]] },
-  });
+  await ensureSheetsInitialized();
+  try {
+    await getSheets().spreadsheets.values.append({
+      spreadsheetId: getSpreadsheetId(),
+      range: `'${CATEGORIES_SHEET}'!A:D`,
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: { values: [[category.id, category.name, category.side, category.color]] },
+    });
+  } catch (err) {
+    handleSheetError(err, CATEGORIES_SHEET);
+  }
   return category;
 }
 
@@ -362,13 +495,18 @@ export async function appendPublicWish(wish: any) {
     wish.createdAt,
     JSON.stringify(wish.replies || [])
   ];
-  await getSheets().spreadsheets.values.append({
-    spreadsheetId: getSpreadsheetId(),
-    range: `'${WISHES_SHEET}'!A:G`,
-    valueInputOption: "RAW",
-    insertDataOption: "INSERT_ROWS",
-    requestBody: { values: [rowData] },
-  });
+  await ensureSheetsInitialized();
+  try {
+    await getSheets().spreadsheets.values.append({
+      spreadsheetId: getSpreadsheetId(),
+      range: `'${WISHES_SHEET}'!A:G`,
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: { values: [rowData] },
+    });
+  } catch (err) {
+    handleSheetError(err, WISHES_SHEET);
+  }
 }
 
 export async function updatePublicWishReplies(wishId: string, replies: any[]) {
@@ -377,6 +515,21 @@ export async function updatePublicWishReplies(wishId: string, replies: any[]) {
   if (!wish) throw new Error("Wish not found");
   
   await updateValues(WISHES_SHEET, `G${wish.row}:G${wish.row}`, [[JSON.stringify(replies)]]);
+}
+
+export function getSpreadsheetInfo() {
+  return {
+    spreadsheetId: getSpreadsheetId(),
+    serviceAccountEmail:
+      process.env.SAUFYNNA_PIPIN_GOOGLE_EMAIL ||
+      process.env.FYNNA_PIPIN_GOOGLE_EMAIL ||
+      "(belum diatur)",
+    sheets: {
+      guests: GUESTS_SHEET,
+      categories: CATEGORIES_SHEET,
+      wishes: WISHES_SHEET,
+    },
+  };
 }
 
 export const SHEET_CONFIG = { GUESTS_SHEET, CATEGORIES_SHEET, WISHES_SHEET, GUEST_HEADERS, CATEGORY_HEADERS };
