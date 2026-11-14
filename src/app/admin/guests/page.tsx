@@ -436,7 +436,7 @@ function GuestsContent() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <button
               onClick={openAddModal}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-600 hover:to-emerald-700 sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-600/25 transition-all hover:from-rose-700 hover:to-rose-800 sm:w-auto"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -468,7 +468,7 @@ function GuestsContent() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari nama, kode, kontak..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-9 pr-8 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 sm:py-2.5"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-9 pr-8 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-500 focus:bg-white focus:ring-2 focus:ring-rose-500/20 sm:py-2.5"
               />
               {search && (
                 <button
@@ -489,7 +489,7 @@ function GuestsContent() {
               onClick={() => setShowMobileFilters((prev) => !prev)}
               aria-expanded={showMobileFilters}
               className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all sm:hidden ${activeFilterCount > 0 || showMobileFilters
-                ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-500/20"
+                ? "border-rose-500 bg-rose-50 text-rose-700 ring-2 ring-rose-500/20"
                 : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
                 }`}
             >
@@ -498,7 +498,7 @@ function GuestsContent() {
               </svg>
               <span>Filter</span>
               {activeFilterCount > 0 && (
-                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white">
+                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">
                   {activeFilterCount}
                 </span>
               )}
@@ -514,7 +514,7 @@ function GuestsContent() {
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white sm:w-auto sm:text-sm sm:py-2"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs text-slate-800 outline-none transition focus:border-rose-500 focus:bg-white sm:w-auto sm:text-sm sm:py-2"
               >
                 <option value="">Semua Kategori</option>
                 {categories.map((c) => (
@@ -527,7 +527,7 @@ function GuestsContent() {
               <select
                 value={filterRsvp}
                 onChange={(e) => setFilterRsvp(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white sm:w-auto sm:text-sm sm:py-2"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs text-slate-800 outline-none transition focus:border-rose-500 focus:bg-white sm:w-auto sm:text-sm sm:py-2"
               >
                 <option value="">Semua Status</option>
                 <option value="pending">Pending</option>
@@ -541,7 +541,7 @@ function GuestsContent() {
               <select
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as SortKey)}
-                className="flex-1 rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white sm:w-auto sm:text-sm sm:py-2"
+                className="flex-1 rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs text-slate-800 outline-none transition focus:border-rose-500 focus:bg-white sm:w-auto sm:text-sm sm:py-2"
               >
                 {SORT_OPTIONS.map((o) => (
                   <option key={o.key} value={o.key}>
@@ -586,7 +586,7 @@ function GuestsContent() {
         {/* Table / List */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-rose-600 border-t-transparent" />
           </div>
         ) : sorted.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm">
@@ -728,7 +728,7 @@ function GuestsContent() {
                     return (
                       <tr key={g.id} className="transition-colors hover:bg-slate-50">
                         <td className="px-4 py-3">
-                          <code className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">{g.unique_code}</code>
+                          <code className="rounded-md bg-rose-50 px-2 py-1 text-xs font-bold text-rose-700">{g.unique_code}</code>
                         </td>
                         <td className="px-4 py-3 font-medium text-slate-900">{g.name}</td>
                         <td className="px-4 py-3">
@@ -828,7 +828,7 @@ function GuestsContent() {
                   id="guest-name" type="text" value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   maxLength={100} placeholder="Nama lengkap tamu"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
                 />
               </div>
 
@@ -837,7 +837,7 @@ function GuestsContent() {
                 <select
                   id="guest-category" value={formData.category_id}
                   onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
                 >
                   <option value="">Pilih Kategori</option>
                   {categories.map((c) => (
@@ -851,7 +851,7 @@ function GuestsContent() {
                 <input
                   id="guest-pax" type="number" min={1} max={20} value={formData.pax}
                   onChange={(e) => setFormData({ ...formData, pax: parseInt(e.target.value) || 1 })}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
                 />
               </div>
 
@@ -860,7 +860,7 @@ function GuestsContent() {
               {editingGuest && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs text-slate-500 uppercase tracking-wider">Kode Unik</p>
-                  <p className="mt-1 font-mono text-lg font-bold text-emerald-600">{editingGuest.unique_code}</p>
+                  <p className="mt-1 font-mono text-lg font-bold text-rose-700">{editingGuest.unique_code}</p>
                 </div>
               )}
 
@@ -878,7 +878,7 @@ function GuestsContent() {
               </button>
               <button
                 onClick={handleSave} disabled={saving}
-                className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50"
+                className="rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-600/25 transition-all hover:from-rose-700 hover:to-rose-800 disabled:opacity-50"
               >
                 {saving ? "Menyimpan..." : editingGuest ? "Simpan Perubahan" : "Tambah Tamu"}
               </button>
@@ -965,7 +965,7 @@ function SortableTh({
       <button
         type="button"
         onClick={() => onSort(sortKey)}
-        className={`flex w-full items-center gap-1 ${alignCls} uppercase transition-colors hover:text-slate-800 ${active ? "text-emerald-600" : ""
+        className={`flex w-full items-center gap-1 ${alignCls} uppercase transition-colors hover:text-slate-800 ${active ? "text-rose-700" : ""
           }`}
       >
         {label}

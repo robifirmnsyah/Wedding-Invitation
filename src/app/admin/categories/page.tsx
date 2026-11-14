@@ -155,12 +155,12 @@ function CategoriesContent() {
               onChange={(e) => setNewName(e.target.value)}
               maxLength={100}
               placeholder="Nama kategori baru, misal: Teman Kuliah"
-              className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
             />
             <button
               type="submit"
               disabled={adding || !newName.trim()}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-600/25 transition-all hover:from-rose-700 hover:to-rose-800 disabled:opacity-50"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -178,7 +178,7 @@ function CategoriesContent() {
                   onClick={() => setNewColor(c.id)}
                   title={c.id}
                   className={`h-6 w-6 rounded-full ${c.bg} border-2 ${
-                    newColor === c.id ? c.border + " ring-2 ring-emerald-500 ring-offset-1" : "border-transparent hover:scale-110"
+                    newColor === c.id ? c.border + " ring-2 ring-rose-500 ring-offset-1" : "border-transparent hover:scale-110"
                   } transition-all`}
                 />
               ))}
@@ -195,7 +195,7 @@ function CategoriesContent() {
         {/* List */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-rose-600 border-t-transparent" />
           </div>
         ) : categories.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
@@ -243,7 +243,7 @@ function CategoriesContent() {
                         if (e.key === "Enter") handleEditSave(cat.id);
                         if (e.key === "Escape") setEditingId(null);
                       }}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
                     />
                     <div className="flex flex-wrap gap-2">
                       {CATEGORY_COLORS.map((c) => (
@@ -254,7 +254,7 @@ function CategoriesContent() {
                           title={c.id}
                           className={`h-6 w-6 rounded-full ${c.bg} border-2 ${
                             editColor === c.id
-                              ? c.border + " ring-2 ring-emerald-500 ring-offset-1"
+                              ? c.border + " ring-2 ring-rose-500 ring-offset-1"
                               : "border-transparent hover:scale-110"
                           } transition-all`}
                         />
@@ -270,7 +270,7 @@ function CategoriesContent() {
                       <button
                         onClick={() => handleEditSave(cat.id)}
                         disabled={savingEdit || !editName.trim()}
-                        className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
+                        className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
                       >
                         {savingEdit ? "Menyimpan..." : "Simpan"}
                       </button>
@@ -315,7 +315,7 @@ function CategoriesContent() {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => startEdit(cat)}
-                        className="rounded-lg p-2 text-slate-400 transition-all hover:bg-emerald-50 hover:text-emerald-600 sm:opacity-0 sm:group-hover:opacity-100"
+                        className="rounded-lg p-2 text-slate-400 transition-all hover:bg-rose-50 hover:text-rose-700 sm:opacity-0 sm:group-hover:opacity-100"
                         title="Edit kategori"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
