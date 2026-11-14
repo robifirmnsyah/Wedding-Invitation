@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
   return (
     <main className="mahogany min-h-screen grid place-items-center p-6">
       <div className="w-full max-w-sm">
-        <span className="m-eyebrow">FYNNA & PIPIN</span>
+        <span className="m-eyebrow">SAUFYNNA & PIPIN</span>
         <h1 className="text-3xl mt-3">Admin Undangan</h1>
         <form onSubmit={login} className="m-form">
           <label>

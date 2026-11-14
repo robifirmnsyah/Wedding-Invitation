@@ -88,7 +88,7 @@ export const metadata: Metadata = {
         url: "/assets/couple/photo-5.webp",
         width: 1200,
         height: 1600,
-        alt: "Fynna & Pipin",
+        alt: "Saufynna & Pipin",
       },
     ],
   },

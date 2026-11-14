@@ -61,7 +61,7 @@ Merupakan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.
 
 Wassalamu'alaikum Warahmatullahi Wabarakatuh
 
-Fynna & Pipin`;
+Saufynna & Pipin`;
 
 function normalizeWhatsAppNumber(contact: string): string | null {
   const digits = contact.replace(/\D/g, "");
@@ -113,7 +113,7 @@ Atas perhatian dan keikhlasan doa Bapak/Ibu/Saudara/i, kami ucapkan terima kasih
 _Wassalamu'alaikum Warahmatullahi Wabarakatuh_
 
 *Hormat kami,*
-*Fynna & Pipin*`;
+*Saufynna & Pipin*`;
   } else {
     const parentsName = side === "groom" ? "Dedi Supriadi & Yunengsih" : "Yaya Cahyana & Wiangsih";
     return `_Assalamu'alaikum Warahmatullahi Wabarakatuh_
@@ -894,7 +894,7 @@ function GuestsContent() {
                   Pengantin
                 </div>
                 <div className="mt-0.5 text-xs text-slate-500">
-                  Format dari Fynna & Pipin
+                  Format dari Saufynna & Pipin
                 </div>
               </button>
 

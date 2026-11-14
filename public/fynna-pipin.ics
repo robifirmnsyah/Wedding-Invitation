@@ -1,12 +1,12 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Fynna Pipin//Wedding Invitation//ID
+PRODID:-//Saufynna Pipin//Wedding Invitation//ID
 CALSCALE:GREGORIAN
 BEGIN:VEVENT
 UID:fynna-pipin-akad-20270105@wedding-invitation
 DTSTAMP:20261112T000000Z
 DTSTART:20270105T010000Z
-SUMMARY:Akad Nikah Fynna & Pipin
+SUMMARY:Akad Nikah Saufynna & Pipin
 LOCATION:Yang Garden\, Jl. Pandanwangi\, Cinunuk\, Cileunyi\, Bandung
 DESCRIPTION:Akad pukul 08.00 WIB sampai selesai.
 URL:https://maps.app.goo.gl/re6yev5SKJYj3fLL6
@@ -16,7 +16,7 @@ UID:fynna-pipin-resepsi-20270105@wedding-invitation
 DTSTAMP:20261112T000000Z
 DTSTART:20270105T040000Z
 DTEND:20270105T070000Z
-SUMMARY:Resepsi Fynna & Pipin
+SUMMARY:Resepsi Saufynna & Pipin
 LOCATION:Yang Garden\, Jl. Pandanwangi\, Cinunuk\, Cileunyi\, Bandung
 DESCRIPTION:Resepsi pukul 11.00 sampai 14.00 WIB.
 URL:https://maps.app.goo.gl/re6yev5SKJYj3fLL6

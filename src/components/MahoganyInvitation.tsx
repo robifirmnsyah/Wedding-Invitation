@@ -232,7 +232,7 @@ function Wishes({ name, code }: { name: string; code: string | null }) {
                 rows={4}
                 required
                 maxLength={500}
-                placeholder="Tuliskan doa terbaik untuk Fynna & Pipin…"
+                placeholder="Tuliskan doa terbaik untuk Saufynna & Pipin…"
               />
             </label>
             <button className="m-button" disabled={sending}>
@@ -357,7 +357,7 @@ export function InvitationShell() {
   }
   return (
     <div className="mahogany">
-      <aside className="m-desktop" aria-label="Fynna dan Pipin">
+      <aside className="m-desktop" aria-label="Saufynna dan Pipin">
         <Image
           src={`${art}stage-v2.webp`}
           alt=""
@@ -370,7 +370,7 @@ export function InvitationShell() {
         <div className="m-desktop-content">
           <span className="m-eyebrow">THE WEDDING CELEBRATION OF</span>
           <p className="m-desktop-names">
-            Fynna <i>&</i> Pipin
+            Saufynna <i>&</i> Pipin
           </p>
           <span className="m-divider">✦</span>
           <p>05 JANUARI 2027 · YANG GARDEN</p>
@@ -395,7 +395,7 @@ export function InvitationShell() {
             <p className="m-stage-script">We’re</p>
             <p className="m-stage-announcement">GETTING MARRIED</p>
             <h1>
-              Fynna <span>&</span> Pipin
+              Saufynna <span>&</span> Pipin
             </h1>
             <p className="m-cover-date">05 · 01 · 2027</p>
           </div>
@@ -411,7 +411,7 @@ export function InvitationShell() {
                 className="m-lace-art"
               />
               <div className="m-letter-copy">
-                <span className="m-letter-mark">F & P</span>
+                <span className="m-letter-mark">S & P</span>
                 <p>
                   “Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia
                   menciptakan pasangan-pasangan untukmu dari jenismu sendiri…”
@@ -427,9 +427,9 @@ export function InvitationShell() {
               onClick={open}
               disabled={phase !== "closed"}
               tabIndex={phase === "closed" ? 0 : -1}
-              aria-label="Buka undangan Fynna dan Pipin"
+              aria-label="Buka undangan Saufynna dan Pipin"
             >
-              F&P
+              S&P
             </button>
             <div className="m-envelope-spray" aria-hidden="true">
               <Floral />
@@ -627,12 +627,12 @@ export function InvitationShell() {
             >
               <div
                 className="m-keepsakes"
-                aria-label="Kenangan Fynna dan Pipin"
+                aria-label="Kenangan Saufynna dan Pipin"
               >
                 <figure>
                   <Image
                     src="/assets/couple/photo-1.webp"
-                    alt="Fynna dan Pipin di tepi laut"
+                    alt="Saufynna dan Pipin di tepi laut"
                     width={300}
                     height={400}
                   />
@@ -641,13 +641,13 @@ export function InvitationShell() {
                 <figure>
                   <Image
                     src="/assets/couple/photo-3.webp"
-                    alt="Momen bersama Fynna dan Pipin"
+                    alt="Momen bersama Saufynna dan Pipin"
                     width={300}
                     height={400}
                   />
                   <figcaption>our forever</figcaption>
                 </figure>
-                <span aria-hidden="true">F&P</span>
+                <span aria-hidden="true">S&P</span>
               </div>
               <div className="m-timeline">
                 {config.loveStory.map((story) => (
@@ -710,7 +710,7 @@ export function InvitationShell() {
                 <p>{config.closing.message}</p>
                 <p>Terima kasih atas segala doa, cinta, dan kehadiran Anda.</p>
                 <p className="m-closing-names">
-                  Fynna <span>&</span> Pipin
+                  Saufynna <span>&</span> Pipin
                 </p>
                 <span className="m-eyebrow">05 JANUARI 2027</span>
               </div>
@@ -724,7 +724,7 @@ export function InvitationShell() {
                   ♫ Our song · {config.musicTitle} ↗
                 </a>
               )}
-              <p className="m-footer">MADE WITH LOVE · F & P</p>
+              <p className="m-footer">MADE WITH LOVE · S & P</p>
             </section>
             {showNav && (
               <nav className="m-nav" aria-label="Navigasi undangan">
@@ -741,7 +741,7 @@ export function InvitationShell() {
       <dialog
         ref={lightbox}
         className="m-lightbox"
-        aria-label="Galeri foto Fynna dan Pipin"
+        aria-label="Galeri foto Saufynna dan Pipin"
         onCancel={() => setSelectedPhoto(null)}
         onClick={(event) => {
           if (event.target === event.currentTarget) setSelectedPhoto(null);
