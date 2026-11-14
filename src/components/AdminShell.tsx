@@ -125,8 +125,8 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
           {renderSideItems("groom", "Pengantin Pria")}
         </nav>
 
-        {/* Link to Invitation Web */}
-        <div className="border-t border-slate-200 p-4">
+        {/* Link to Invitation Web & Logout */}
+        <div className="border-t border-slate-200 p-4 space-y-1">
           <a
             href="/"
             target="_blank"
@@ -138,6 +138,19 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
             </svg>
             Lihat Undangan
           </a>
+          <button
+            type="button"
+            onClick={async () => {
+              await fetch("/api/admin/logout", { method: "POST" });
+              window.location.assign("/admin/login");
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-rose-600 transition-all hover:bg-rose-50 hover:text-rose-700"
+          >
+            <svg className="h-5 w-5 text-rose-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+            </svg>
+            Keluar (Logout)
+          </button>
         </div>
       </aside>
 
@@ -162,9 +175,25 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
             <span className="text-sm font-bold text-slate-900">Wedding Admin</span>
           </div>
           <div className="flex-1" />
-          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
-            <span className="text-xs font-medium text-slate-600">Admin</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
+              <span className="text-xs font-medium text-slate-600">Admin</span>
+            </div>
+            <button
+              type="button"
+              onClick={async () => {
+                await fetch("/api/admin/logout", { method: "POST" });
+                window.location.assign("/admin/login");
+              }}
+              title="Keluar dari panel admin"
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors"
+            >
+              <svg className="h-3.5 w-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+              </svg>
+              Keluar
+            </button>
           </div>
         </header>
 

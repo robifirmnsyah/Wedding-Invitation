@@ -17,12 +17,15 @@ export default function AdminLoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
-      if (!res.ok)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         throw new Error(
-          res.status === 401
-            ? "Password salah."
-            : "Akses admin belum tersedia.",
+          data.error ||
+            (res.status === 401
+              ? "Password salah."
+              : "Akses admin belum tersedia."),
         );
+      }
       window.location.assign("/admin");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal masuk.");

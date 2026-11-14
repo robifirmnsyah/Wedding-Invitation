@@ -1,5 +1,11 @@
 import { cookies } from "next/headers";
-import { sessionCookie, validAdminSession } from "./admin-session";
+import { getSessionCookieNames, validAdminSession } from "./admin-session";
+
 export async function isAdmin() {
-  return validAdminSession((await cookies()).get(sessionCookie)?.value);
+  const c = await cookies();
+  for (const name of getSessionCookieNames()) {
+    const val = c.get(name)?.value;
+    if (val && (await validAdminSession(val))) return true;
+  }
+  return false;
 }

@@ -907,7 +907,7 @@ function GuestsContent() {
                   Orang Tua
                 </div>
                 <div className="mt-0.5 text-xs text-slate-500">
-                  Format dari {side === "groom" ? "Indra & Martini" : "Enung & Amah"}
+                  Format dari {side === "groom" ? "Dedi & Yunengsih" : "Yaya & Wiangsih"}
                 </div>
               </button>
             </div>

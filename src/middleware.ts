@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { sessionCookie, validAdminSession } from "@/lib/admin-session";
+import { getSessionCookieNames, validAdminSession } from "@/lib/admin-session";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -11,7 +11,17 @@ export async function middleware(request: NextRequest) {
     pathname === "/api/admin/login"
   )
     return NextResponse.next();
-  if (!(await validAdminSession(request.cookies.get(sessionCookie)?.value))) {
+
+  let authenticated = false;
+  for (const name of getSessionCookieNames()) {
+    const val = request.cookies.get(name)?.value;
+    if (val && (await validAdminSession(val))) {
+      authenticated = true;
+      break;
+    }
+  }
+
+  if (!authenticated) {
     if (pathname.startsWith("/api/"))
       return NextResponse.json(
         { error: "Silakan masuk sebagai admin." },
