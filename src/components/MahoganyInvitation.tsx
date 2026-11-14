@@ -560,7 +560,7 @@ export function InvitationShell() {
               <div className="m-date-display">
                 <span className="m-date-day">SELASA</span>
                 <div className="m-date-row">
-                  <span className="m-date-month">JANUARI</span>
+                  <span className="m-date-month">JAN</span>
                   <strong className="m-date-num">05</strong>
                   <span className="m-date-year">2027</span>
                 </div>
