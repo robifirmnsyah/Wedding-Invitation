@@ -558,9 +558,12 @@ export function InvitationShell() {
               title="Save the Date"
             >
               <div className="m-date-display">
-                <span>JANUARI</span>
-                <strong>05</strong>
-                <span>SELASA · 2027</span>
+                <span className="m-date-day">SELASA</span>
+                <div className="m-date-row">
+                  <span className="m-date-month">JANUARI</span>
+                  <strong className="m-date-num">05</strong>
+                  <span className="m-date-year">2027</span>
+                </div>
               </div>
               <Countdown />
               <a className="m-button" href="/fynna-pipin.ics" download>

@@ -115,7 +115,7 @@ _Wassalamu'alaikum Warahmatullahi Wabarakatuh_
 *Hormat kami,*
 *Saufynna & Pipin*`;
   } else {
-    const parentsName = side === "groom" ? "Dedi Supriadi & Yunengsih" : "Yaya Cahyana & Wiangsih";
+    const parentsName = side === "groom" ? "Dedi Supriadi & Yunengsih" : "Yaya Cahyana & Awih Wiangsih";
     return `_Assalamu'alaikum Warahmatullahi Wabarakatuh_
 
 Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i *${guestName}* untuk menghadiri acara pernikahan putra-putri kami.
@@ -907,7 +907,7 @@ function GuestsContent() {
                   Orang Tua
                 </div>
                 <div className="mt-0.5 text-xs text-slate-500">
-                  Format dari {side === "groom" ? "Dedi & Yunengsih" : "Yaya & Wiangsih"}
+                  Format dari {side === "groom" ? "Dedi & Yunengsih" : "Yaya & Awih Wiangsih"}
                 </div>
               </button>
             </div>
