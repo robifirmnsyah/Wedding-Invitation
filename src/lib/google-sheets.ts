@@ -288,6 +288,17 @@ function toGuestRow(guest: SheetGuest) {
   ]];
 }
 
+async function findNextCleanRow(sheetName: string): Promise<number> {
+  const rows = await getValues(sheetName, "A2:A");
+  let lastNonEmptyIndex = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i] && rows[i][0] && rows[i][0].trim().length > 0) {
+      lastNonEmptyIndex = i;
+    }
+  }
+  return lastNonEmptyIndex + 3; // +2 for A2 offset, +1 for next row
+}
+
 export async function createGuest(input: {
   name: string; category_id: string; pax: number; contact_type: string; contact: string; side?: Side;
 }) {
@@ -295,25 +306,15 @@ export async function createGuest(input: {
   const category = categories.find((item) => item.id === input.category_id);
   if (!category) throw new Error("Kategori tidak ditemukan.");
   const now = new Date().toISOString();
+  const nextRow = await findNextCleanRow(GUESTS_SHEET);
   const guest: SheetGuest = {
     id: await freshCode(), unique_code: "", name: input.name.trim().slice(0, 100), category_id: category.id,
     pax: Math.max(1, Math.min(input.pax || 1, 20)), contact_type: input.contact_type.trim().slice(0, 50) || "WhatsApp",
     contact: input.contact.trim().slice(0, 100), rsvp_status: "pending", wish_message: "", created_at: now, updated_at: now,
-    side: category.side, guest_categories: { name: category.name }, row: 0,
+    side: category.side, guest_categories: { name: category.name }, row: nextRow,
   };
   guest.unique_code = guest.id;
-  await ensureSheetsInitialized();
-  try {
-    await getSheets().spreadsheets.values.append({
-      spreadsheetId: getSpreadsheetId(),
-      range: `'${GUESTS_SHEET}'!A:K`,
-      valueInputOption: "RAW",
-      insertDataOption: "INSERT_ROWS",
-      requestBody: { values: toGuestRow(guest) },
-    });
-  } catch (err) {
-    handleSheetError(err, GUESTS_SHEET);
-  }
+  await updateValues(GUESTS_SHEET, `A${nextRow}:K${nextRow}`, toGuestRow(guest));
   return guest;
 }
 
@@ -363,19 +364,9 @@ export async function createCategory(input: { name: string; side: Side; color: s
   const categories = await listCategories(input.side);
   if (categories.some((category) => category.name.toLowerCase() === name.toLowerCase())) throw new Error("Kategori dengan nama ini sudah ada.");
   const id = crypto.randomUUID();
-  const category: SheetCategory = { id, name, side: input.side, color: input.color || "slate", row: 0 };
-  await ensureSheetsInitialized();
-  try {
-    await getSheets().spreadsheets.values.append({
-      spreadsheetId: getSpreadsheetId(),
-      range: `'${CATEGORIES_SHEET}'!A:D`,
-      valueInputOption: "RAW",
-      insertDataOption: "INSERT_ROWS",
-      requestBody: { values: [[category.id, category.name, category.side, category.color]] },
-    });
-  } catch (err) {
-    handleSheetError(err, CATEGORIES_SHEET);
-  }
+  const nextRow = await findNextCleanRow(CATEGORIES_SHEET);
+  const category: SheetCategory = { id, name, side: input.side, color: input.color || "slate", row: nextRow };
+  await updateValues(CATEGORIES_SHEET, `A${nextRow}:D${nextRow}`, [[category.id, category.name, category.side, category.color]]);
   return category;
 }
 
@@ -497,16 +488,64 @@ export async function appendPublicWish(wish: any) {
   ];
   await ensureSheetsInitialized();
   try {
-    await getSheets().spreadsheets.values.append({
-      spreadsheetId: getSpreadsheetId(),
-      range: `'${WISHES_SHEET}'!A:G`,
-      valueInputOption: "RAW",
-      insertDataOption: "INSERT_ROWS",
-      requestBody: { values: [rowData] },
-    });
+    const nextRow = await findNextCleanRow(WISHES_SHEET);
+    await updateValues(
+      WISHES_SHEET,
+      `A${nextRow}:G${nextRow}`,
+      [rowData]
+    );
   } catch (err) {
     handleSheetError(err, WISHES_SHEET);
   }
+}
+
+export async function cleanupSpreadsheet() {
+  const sheets = getSheets();
+  const spreadsheetId = getSpreadsheetId();
+
+  // 1. Get existing wishes that have content
+  const wishes = await listPublicWishes();
+  // Filter out test wishes like "Tester Robi"
+  const realWishes = wishes.filter((w) => w.name !== "Tester Robi");
+
+  // 2. Clear Web Wishes
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId,
+    range: `'${WISHES_SHEET}'!A2:G`,
+  });
+
+  // 3. Write real wishes cleanly starting from row 2
+  if (realWishes.length > 0) {
+    const sorted = [...realWishes].sort((a, b) =>
+      (a.createdAt || "").localeCompare(b.createdAt || ""),
+    );
+    const wishRows = sorted.map((w) => [
+      w.id,
+      w.name,
+      w.message,
+      w.attendance,
+      w.verified ? "TRUE" : "FALSE",
+      w.createdAt,
+      JSON.stringify(w.replies || []),
+    ]);
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `'${WISHES_SHEET}'!A2:G${wishRows.length + 1}`,
+      valueInputOption: "RAW",
+      requestBody: { values: wishRows },
+    });
+  }
+
+  // 4. Clear Web Invitation completely (wipes out the 127 old ghost guests)
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId,
+    range: `'${GUESTS_SHEET}'!A2:K`,
+  });
+
+  return {
+    cleanedWishes: realWishes.length,
+    clearedOldGuests: true,
+  };
 }
 
 export async function updatePublicWishReplies(wishId: string, replies: any[]) {
